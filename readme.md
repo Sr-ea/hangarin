@@ -1,5 +1,7 @@
 # ⤷ Hangarin 🎀: Django Task and To-Do Manager ˎˊ˗
 
+## 📓 Project Description
+
 Hangarin is a simple web application built with Django. Managing tasks efficiently with the ability to organize their daily tasks, manage priorities, add notes, and break down large goals into smaller subtasks. 
 
 ## 𝜗ৎ Features  
@@ -23,6 +25,12 @@ Hangarin is a simple web application built with Django. Managing tasks efficient
 - **PythonAnywhere** (Deployment platform)  
 
 ## 𐐘 Author 
-| Name                  | Email                              | Social Media                          | GitHub                     |
-|-----------------------|------------------------------------|---------------------------------------|----------------------------|
-| Rhea Salonoy          | 202380016@psu.palawan.edu.ph       | [Facebook](https://www.facebook.com/R04.ji) | [GitHub](https://github.com/Sr-ea) |
+
+ <img src="https://github.com/Sr-ea.png" width="150">
+    <div style="text-align: left;">
+        <strong>Name:</strong> Rhea Salonoy<br>
+        <strong>Email:</strong> 202380016@psu.palawan.edu.ph<br>
+        <strong>Social Media:</strong> <a href="https://www.facebook.com/R04.ji">Facebook</a><br>
+        <strong>GitHub:</strong> <a href="https://github.com/Sr-ea">Sr-ea</a>
+    </div>
+
