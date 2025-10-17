@@ -1,0 +1,95 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="content">
+    <div class="container-fluid">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h4 class="page-title">Notes</h4>
+            <a href="{% url 'note-add' %}" class="btn btn-primary">
+                <i class="fas fa-plus"></i> Add New Note
+            </a>
+        </div>
+
+        <div class="row">
+            <div class="col-md-12">
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-title">All Notes</div>
+                        <div class="card-category">Manage your task notes</div>
+                    </div>
+                    <div class="card-body">
+                        {% if notes %}
+                        <div class="row">
+                            {% for note in notes %}
+                            <div class="col-md-6 mb-4">
+                                <div class="card note-card h-100">
+                                    <div class="card-header d-flex justify-content-between align-items-center">
+                                        <div>
+                                            <h6 class="card-title mb-0 casual-font">
+                                                {% if note.task %}
+                                                    Note for: {{ note.task.title }}
+                                                {% else %}
+                                                    General Note
+                                                {% endif %}
+                                            </h6>
+                                        </div>
+                                        <div class="btn-group">
+                                            <a href="{% url 'note-update' note.id %}" class="btn btn-sm btn-outline-primary">
+                                                <i class="fas fa-edit"></i>
+                                            </a>
+                                            <a href="{% url 'note-delete' note.id %}" class="btn btn-sm btn-outline-danger">
+                                                <i class="fas fa-trash"></i>
+                                            </a>
+                                        </div>
+                                    </div>
+                                    <div class="card-body">
+                                        <p class="card-text body-font">{{ note.content|truncatewords:30 }}</p>
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <small class="text-muted body-font">
+                                                Created: {{ note.created_at|date:"M d, Y" }}
+                                            </small>
+                                            {% if note.task %}
+                                            <span class="badge badge-info body-font">
+                                                {{ note.task.status }}
+                                            </span>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                        {% else %}
+                        <div class="text-center py-5">
+                            <i class="fas fa-sticky-note fa-4x text-muted mb-3"></i>
+                            <h4 class="text-muted casual-font">No notes yet</h4>
+                            <p class="text-muted body-font">Create your first note for tasks</p>
+                            <a href="{% url 'note-add' %}" class="btn btn-primary mt-3">
+                                <i class="fas fa-plus"></i> Create First Note
+                            </a>
+                        </div>
+                        {% endif %}
+                        
+                        {% if is_paginated %}
+                            {% include 'includes/pagination.html' %}
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.note-card {
+    transition: all 0.3s ease;
+    border-left: 4px solid var(--sky-blue);
+}
+
+.note-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 25px rgba(17, 138, 178, 0.15);
+}
+</style>
+{% endblock %}

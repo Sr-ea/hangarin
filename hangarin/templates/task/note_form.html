@@ -1,0 +1,80 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load widget_tweaks %}
+
+{% block content %}
+<div class="content">
+    <div class="container-fluid">
+        <h4 class="page-title">{% if object %}Update Note{% else %}Add New Note{% endif %}</h4>
+        
+        <div class="row">
+            <div class="col-md-8">
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-title">Note Form</div>
+                        <div class="card-category">Write your note content</div>
+                    </div>
+                    <div class="card-body">
+                        <form method="post" novalidate>
+                            {% csrf_token %}
+                            
+                            {% if form.non_field_errors %}
+                            <div class="alert alert-danger" role="alert">
+                                {% for error in form.non_field_errors %}
+                                    <p{% if forloop.last %} class="mb-0"{% endif %}>{{ error }}</p>
+                                {% endfor %}
+                            </div>
+                            {% endif %}
+
+                            {% for field in form %}
+                            <div class="form-group">
+                                <label for="{{ field.id_for_label }}" class="casual-font">{{ field.label }}</label>
+                                {% if field.name == 'content' %}
+                                    {% render_field field class="form-control" rows="8" placeholder="Write your note here..." %}
+                                {% else %}
+                                    {% render_field field class="form-control" %}
+                                {% endif %}
+                                {% if field.help_text %}
+                                    <small class="form-text text-muted body-font">{{ field.help_text }}</small>
+                                {% endif %}
+                                {% for error in field.errors %}
+                                    <div class="invalid-feedback d-block">
+                                        {{ error }}
+                                    </div>
+                                {% endfor %}
+                            </div>
+                            {% endfor %}
+
+                            <div class="form-group mt-4">
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="fas fa-save"></i> {% if object %}Update Note{% else %}Create Note{% endif %}
+                                </button>
+                                <a href="{% url 'note-list' %}" class="btn btn-secondary">
+                                    <i class="fas fa-times"></i> Cancel
+                                </a>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-4">
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-title">📝 Note Tips</div>
+                    </div>
+                    <div class="card-body">
+                        <p class="body-font">Notes help you capture important details about your tasks.</p>
+                        <ul class="body-font">
+                            <li>Be specific and detailed</li>
+                            <li>Include relevant context</li>
+                            <li>Use notes for task instructions</li>
+                            <li>Track progress updates</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

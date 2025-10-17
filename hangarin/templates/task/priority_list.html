@@ -1,0 +1,88 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="content">
+    <div class="container-fluid">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h4 class="page-title">Priorities</h4>
+            <a href="{% url 'priority-add' %}" class="btn btn-primary">
+                <i class="fas fa-plus"></i> Add New Priority
+            </a>
+        </div>
+
+        <div class="row">
+            <div class="col-md-12">
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-title">Task Priorities</div>
+                        <div class="card-category">Manage task priority levels</div>
+                    </div>
+                    <div class="card-body">
+                        {% if priorities %}
+                        <div class="table-responsive">
+                            <table class="table table-striped mt-3">
+                                <thead>
+                                    <tr>
+                                        <th>Name</th>
+                                        <th>Level</th>
+                                        <th>Color</th>
+                                        <th>Description</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for priority in priorities %}
+                                    <tr>
+                                        <td>
+                                            <strong class="body-font">{{ priority.name }}</strong>
+                                        </td>
+                                        <td class="body-font">
+                                            {{ priority.level }}
+                                        </td>
+                                        <td>
+                                            <span class="badge" style="background-color: {{ priority.color }}; color: white;">
+                                                {{ priority.color }}
+                                            </span>
+                                        </td>
+                                        <td class="body-font">
+                                            {% if priority.description %}
+                                                {{ priority.description }}
+                                            {% else %}
+                                                <span class="text-muted">No description</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            <a href="{% url 'priority-update' priority.id %}" class="btn btn-sm btn-outline-primary">
+                                                <i class="fas fa-edit"></i> Edit
+                                            </a>
+                                            <a href="{% url 'priority-delete' priority.id %}" class="btn btn-sm btn-outline-danger">
+                                                <i class="fas fa-trash"></i> Delete
+                                            </a>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                        {% else %}
+                        <div class="text-center py-5">
+                            <i class="fas fa-flag fa-4x text-muted mb-3"></i>
+                            <h4 class="text-muted casual-font">No priorities yet</h4>
+                            <p class="text-muted body-font">Create priority levels for your tasks</p>
+                            <a href="{% url 'priority-add' %}" class="btn btn-primary mt-3">
+                                <i class="fas fa-plus"></i> Create First Priority
+                            </a>
+                        </div>
+                        {% endif %}
+                        
+                        {% if is_paginated %}
+                            {% include 'includes/pagination.html' %}
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

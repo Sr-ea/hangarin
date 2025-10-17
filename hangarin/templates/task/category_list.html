@@ -1,0 +1,82 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="content">
+    <div class="container-fluid">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h4 class="page-title">Categories</h4>
+            <a href="{% url 'category-add' %}" class="btn btn-primary">
+                <i class="fas fa-plus"></i> Add New Category
+            </a>
+        </div>
+
+        <div class="row">
+            <div class="col-md-12">
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-title">All Categories</div>
+                        <div class="card-category">Manage your task categories</div>
+                    </div>
+                    <div class="card-body">
+                        {% if categories %}
+                        <div class="table-responsive">
+                            <table class="table table-striped mt-3">
+                                <thead>
+                                    <tr>
+                                        <th>Name</th>
+                                        <th>Description</th>
+                                        <th>Created At</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for category in categories %}
+                                    <tr>
+                                        <td>
+                                            <strong class="body-font">{{ category.name }}</strong>
+                                        </td>
+                                        <td class="body-font">
+                                            {% if category.description %}
+                                                {{ category.description }}
+                                            {% else %}
+                                                <span class="text-muted">No description</span>
+                                            {% endif %}
+                                        </td>
+                                        <td class="body-font">
+                                            {{ category.created_at|date:"M d, Y" }}
+                                        </td>
+                                        <td>
+                                            <a href="{% url 'category-update' category.id %}" class="btn btn-sm btn-outline-primary">
+                                                <i class="fas fa-edit"></i> Edit
+                                            </a>
+                                            <a href="{% url 'category-delete' category.id %}" class="btn btn-sm btn-outline-danger">
+                                                <i class="fas fa-trash"></i> Delete
+                                            </a>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                        {% else %}
+                        <div class="text-center py-5">
+                            <i class="fas fa-folder-open fa-4x text-muted mb-3"></i>
+                            <h4 class="text-muted casual-font">No categories yet</h4>
+                            <p class="text-muted body-font">Create your first category to organize tasks</p>
+                            <a href="{% url 'category-add' %}" class="btn btn-primary mt-3">
+                                <i class="fas fa-plus"></i> Create First Category
+                            </a>
+                        </div>
+                        {% endif %}
+                        
+                        {% if is_paginated %}
+                            {% include 'includes/pagination.html' %}
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

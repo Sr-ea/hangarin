@@ -1,0 +1,76 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load widget_tweaks %}
+
+{% block content %}
+<div class="content">
+    <div class="container-fluid">
+        <h4 class="page-title">{% if object %}Update Subtask{% else %}Add New Subtask{% endif %}</h4>
+        
+        <div class="row">
+            <div class="col-md-8">
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-title">Subtask Form</div>
+                        <div class="card-category">Enter subtask details</div>
+                    </div>
+                    <div class="card-body">
+                        <form method="post" novalidate>
+                            {% csrf_token %}
+                            
+                            {% if form.non_field_errors %}
+                            <div class="alert alert-danger" role="alert">
+                                {% for error in form.non_field_errors %}
+                                    <p{% if forloop.last %} class="mb-0"{% endif %}>{{ error }}</p>
+                                {% endfor %}
+                            </div>
+                            {% endif %}
+
+                            {% for field in form %}
+                            <div class="form-group">
+                                <label for="{{ field.id_for_label }}" class="casual-font">{{ field.label }}</label>
+                                {% render_field field class="form-control" %}
+                                {% if field.help_text %}
+                                    <small class="form-text text-muted body-font">{{ field.help_text }}</small>
+                                {% endif %}
+                                {% for error in field.errors %}
+                                    <div class="invalid-feedback d-block">
+                                        {{ error }}
+                                    </div>
+                                {% endfor %}
+                            </div>
+                            {% endfor %}
+
+                            <div class="form-group mt-4">
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="fas fa-save"></i> {% if object %}Update Subtask{% else %}Create Subtask{% endif %}
+                                </button>
+                                <a href="{% url 'subtask-list' %}" class="btn btn-secondary">
+                                    <i class="fas fa-times"></i> Cancel
+                                </a>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-4">
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-title">✅ Subtask Tips</div>
+                    </div>
+                    <div class="card-body">
+                        <p class="body-font">Subtasks help break large tasks into manageable pieces.</p>
+                        <ul class="body-font">
+                            <li>Keep subtasks small and specific</li>
+                            <li>Set clear completion criteria</li>
+                            <li>Track progress with status updates</li>
+                            <li>Link subtasks to parent tasks</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
