@@ -19,6 +19,13 @@ class PriorityForm(forms.ModelForm):
     class Meta:
         model = Priority
         fields = '__all__'
+        widgets = {
+            'color': forms.TextInput(attrs={
+                'type': 'color', 
+                'class': 'form-control form-control-color',
+                'title': 'Choose a color for this priority'
+            }),
+        }
 
 class NoteForm(forms.ModelForm):
     class Meta:

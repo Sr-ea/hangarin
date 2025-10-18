@@ -1,0 +1,226 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="content">
+    <div class="container-fluid">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h4 class="page-title">Task Details</h4>
+            <div class="btn-group">
+                <a href="{% url 'task-update' task.id %}" class="btn btn-primary">
+                    <i class="fas fa-edit"></i> Edit Task
+                </a>
+                <a href="{% url 'task-list' %}" class="btn btn-secondary">
+                    <i class="fas fa-arrow-left"></i> Back to List
+                </a>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-8">
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-title">Task Information</div>
+                        <div class="card-category">Complete task details</div>
+                    </div>
+                    <div class="card-body">
+                        <div class="task-detail-section">
+                            <h5 class="casual-font mb-3">{{ task.title }}</h5>
+                            
+                            <div class="row mb-4">
+                                <div class="col-md-6">
+                                    <div class="detail-item">
+                                        <label class="casual-font text-muted">Status</label>
+                                        <div>
+                                            <span class="badge badge-{% if task.status == 'Completed' %}success{% elif task.status == 'In Progress' %}warning{% else %}secondary{% endif %}">
+                                                {{ task.status }}
+                                            </span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="detail-item">
+                                        <label class="casual-font text-muted">Priority</label>
+                                        <div>
+                                            <span class="badge" 
+                                                  style="background-color: {{ task.priority.color }}; 
+                                                         color: white;
+                                                         padding: 6px 12px;
+                                                         border-radius: 15px;">
+                                                {{ task.priority }}
+                                            </span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="row mb-4">
+                                <div class="col-md-6">
+                                    <div class="detail-item">
+                                        <label class="casual-font text-muted">Category</label>
+                                        <p class="body-font">{{ task.category }}</p>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="detail-item">
+                                        <label class="casual-font text-muted">Deadline</label>
+                                        <p class="body-font">
+                                            {% if task.deadline %}
+                                                {{ task.deadline|date:"M d, Y g:i A" }}
+                                            {% else %}
+                                                <span class="text-muted">No deadline set</span>
+                                            {% endif %}
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {% if task.description %}
+                            <div class="detail-item mb-4">
+                                <label class="casual-font text-muted">Description</label>
+                                <div class="description-box p-3 rounded bg-light">
+                                    <p class="body-font mb-0">{{ task.description|linebreaks }}</p>
+                                </div>
+                            </div>
+                            {% endif %}
+
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="detail-item">
+                                        <label class="casual-font text-muted">Created</label>
+                                        <p class="body-font">{{ task.created_at|date:"M d, Y g:i A" }}</p>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="detail-item">
+                                        <label class="casual-font text-muted">Last Updated</label>
+                                        <p class="body-font">{{ task.updated_at|date:"M d, Y g:i A" }}</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Sidebar with related information -->
+            <div class="col-md-4">
+                <!-- Subtasks Card -->
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-title">✅ Subtasks</div>
+                        <div class="card-category">Breakdown of this task</div>
+                    </div>
+                    <div class="card-body">
+                        {% if task.subtask_set.all %}
+                            <div class="subtask-list">
+                                {% for subtask in task.subtask_set.all %}
+                                <div class="subtask-item d-flex justify-content-between align-items-center mb-2 p-2 rounded">
+                                    <div>
+                                        <span class="body-font">{{ subtask.title }}</span>
+                                        <span class="badge badge-{% if subtask.status == 'Completed' %}success{% elif subtask.status == 'In Progress' %}warning{% else %}secondary{% endif %} ml-2">
+                                            {{ subtask.status }}
+                                        </span>
+                                    </div>
+                                    <a href="{% url 'subtask-update' subtask.id %}" class="btn btn-sm btn-outline-primary">
+                                        <i class="fas fa-edit"></i>
+                                    </a>
+                                </div>
+                                {% endfor %}
+                            </div>
+                        {% else %}
+                            <div class="text-center py-3">
+                                <i class="fas fa-check-square fa-2x text-muted mb-2"></i>
+                                <p class="text-muted body-font small">No subtasks yet</p>
+                            </div>
+                        {% endif %}
+                        <a href="{% url 'subtask-add' %}" class="btn btn-outline-primary btn-sm btn-block mt-2">
+                            <i class="fas fa-plus"></i> Add Subtask
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Notes Card -->
+                <div class="card mt-4">
+                    <div class="card-header">
+                        <div class="card-title">📝 Notes</div>
+                        <div class="card-category">Related notes</div>
+                    </div>
+                    <div class="card-body">
+                        {% if task.note_set.all %}
+                            <div class="notes-list">
+                                {% for note in task.note_set.all %}
+                                <div class="note-item mb-3 p-2 rounded bg-light">
+                                    <p class="body-font small mb-1">{{ note.content|truncatewords:20 }}</p>
+                                    <small class="text-muted">{{ note.created_at|date:"M d, Y" }}</small>
+                                </div>
+                                {% endfor %}
+                            </div>
+                        {% else %}
+                            <div class="text-center py-3">
+                                <i class="fas fa-sticky-note fa-2x text-muted mb-2"></i>
+                                <p class="text-muted body-font small">No notes yet</p>
+                            </div>
+                        {% endif %}
+                        <a href="{% url 'note-add' %}" class="btn btn-outline-info btn-sm btn-block mt-2">
+                            <i class="fas fa-plus"></i> Add Note
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Quick Actions -->
+                <div class="card mt-4">
+                    <div class="card-header">
+                        <div class="card-title">⚡ Quick Actions</div>
+                    </div>
+                    <div class="card-body">
+                        <div class="d-grid gap-2">
+                            <a href="{% url 'task-update' task.id %}" class="btn btn-outline-primary btn-sm">
+                                <i class="fas fa-edit"></i> Edit Task
+                            </a>
+                            <a href="{% url 'task-delete' task.id %}" class="btn btn-outline-danger btn-sm">
+                                <i class="fas fa-trash"></i> Delete Task
+                            </a>
+                            <a href="{% url 'task-list' %}" class="btn btn-outline-secondary btn-sm">
+                                <i class="fas fa-list"></i> All Tasks
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.detail-item {
+    margin-bottom: 1rem;
+}
+
+.detail-item label {
+    font-weight: 600;
+    margin-bottom: 0.25rem;
+    display: block;
+}
+
+.description-box {
+    border-left: 3px solid var(--sky-blue);
+}
+
+.subtask-item, .note-item {
+    transition: all 0.3s ease;
+    border: 1px solid rgba(0,0,0,0.1);
+}
+
+.subtask-item:hover, .note-item:hover {
+    background: rgba(255, 209, 102, 0.1) !important;
+    transform: translateX(3px);
+}
+
+.task-detail-section h5 {
+    color: var(--ocean-blue);
+    border-bottom: 2px solid var(--sunshine-yellow);
+    padding-bottom: 0.5rem;
+}
+</style>
+{% endblock %}

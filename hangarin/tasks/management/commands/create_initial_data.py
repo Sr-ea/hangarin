@@ -44,3 +44,18 @@ class Command(BaseCommand):
                 )
         
         self.stdout.write(self.style.SUCCESS('Successfully populated the database with 20 tasks'))
+    
+    # In your admin.py or a management command
+def create_default_priorities():
+    priorities = [
+        {'name': 'High', 'color': '#dc3545', 'description': 'Critical tasks that need immediate attention'},
+        {'name': 'Medium', 'color': '#ffc107', 'description': 'Important tasks that should be completed soon'},
+        {'name': 'Low', 'color': '#17a2b8', 'description': 'Tasks that can be done when time permits'},
+        {'name': 'Optional', 'color': '#6c757d', 'description': 'Nice-to-have tasks with no deadline'},
+    ]
+    
+    for priority_data in priorities:
+        Priority.objects.get_or_create(
+            name=priority_data['name'],
+            defaults=priority_data
+        )

@@ -1,4 +1,4 @@
-from django.views.generic import ListView, CreateView, UpdateView, DeleteView, TemplateView
+from django.views.generic import ListView, CreateView, UpdateView, DeleteView, TemplateView, DetailView
 from .models import Task
 import json
 from django.utils import timezone
@@ -7,6 +7,11 @@ from django.urls import reverse_lazy
 from .models import Task, Category, Priority, Note, SubTask
 from .forms import TaskForm, CategoryForm, PriorityForm, NoteForm, SubTaskForm
 
+class TaskDetailView(DetailView):
+    model = Task
+    template_name = 'task/task_detail.html'
+    context_object_name = 'task'
+    
 class TaskListView(ListView):
     model = Task
     context_object_name = 'tasks'
@@ -161,13 +166,13 @@ class HomePageView(TemplateView):
         ).order_by('deadline')[:5]
         
         # Calendar data
-        calendar_data, tasks_by_date = self.get_calendar_data(today)
+        calendar_data, tasks_by_date = self.get_enhanced_calendar_data(today)
         context['calendar_data'] = json.dumps(calendar_data)
         context['tasks_by_date'] = json.dumps(tasks_by_date)
         
         return context
     
-    def get_calendar_data(self, today):
+    def get_enhanced_calendar_data(self, today):
         # Get tasks for the current month
         start_of_month = today.replace(day=1)
         if today.month == 12:
@@ -177,18 +182,21 @@ class HomePageView(TemplateView):
         
         monthly_tasks = Task.objects.filter(
             deadline__date__range=[start_of_month, end_of_month]
-        )
+        ).select_related('priority')  # Optimize query
         
-        # Create tasks by date dictionary
+        # Create enhanced tasks by date dictionary
         tasks_by_date = {}
         for task in monthly_tasks:
             date_key = task.deadline.date().isoformat()
             if date_key not in tasks_by_date:
                 tasks_by_date[date_key] = []
+            
             tasks_by_date[date_key].append({
                 'title': task.title,
-                'priority': task.priority.name,
-                'status': task.status
+                'priority_name': task.priority.name,
+                'priority_color': task.priority.color,
+                'status': task.status,
+                'id': task.id
             })
         
         # Calendar structure

@@ -16,7 +16,7 @@
                 <div class="card">
                     <div class="card-header">
                         <div class="card-title">Task Priorities</div>
-                        <div class="card-category">Manage task priority levels</div>
+                        <div class="card-category">Manage task priority levels and colors</div>
                     </div>
                     <div class="card-body">
                         {% if priorities %}
@@ -25,9 +25,9 @@
                                 <thead>
                                     <tr>
                                         <th>Name</th>
-                                        <th>Level</th>
                                         <th>Color</th>
                                         <th>Description</th>
+                                        <th>Created At</th>
                                         <th>Actions</th>
                                     </tr>
                                 </thead>
@@ -37,13 +37,17 @@
                                         <td>
                                             <strong class="body-font">{{ priority.name }}</strong>
                                         </td>
-                                        <td class="body-font">
-                                            {{ priority.level }}
-                                        </td>
                                         <td>
-                                            <span class="badge" style="background-color: {{ priority.color }}; color: white;">
-                                                {{ priority.color }}
-                                            </span>
+                                            <div class="d-flex align-items-center">
+                                                <div class="color-display mr-2" 
+                                                     style="background-color: {{ priority.color }}; 
+                                                            width: 30px; 
+                                                            height: 30px; 
+                                                            border-radius: 5px;
+                                                            border: 2px solid #dee2e6;">
+                                                </div>
+                                                <span class="body-font small">{{ priority.color }}</span>
+                                            </div>
                                         </td>
                                         <td class="body-font">
                                             {% if priority.description %}
@@ -51,6 +55,9 @@
                                             {% else %}
                                                 <span class="text-muted">No description</span>
                                             {% endif %}
+                                        </td>
+                                        <td class="body-font">
+                                            {{ priority.created_at|date:"M d, Y" }}
                                         </td>
                                         <td>
                                             <a href="{% url 'priority-update' priority.id %}" class="btn btn-sm btn-outline-primary">
@@ -69,7 +76,7 @@
                         <div class="text-center py-5">
                             <i class="fas fa-flag fa-4x text-muted mb-3"></i>
                             <h4 class="text-muted casual-font">No priorities yet</h4>
-                            <p class="text-muted body-font">Create priority levels for your tasks</p>
+                            <p class="text-muted body-font">Create priority levels with colors for your tasks</p>
                             <a href="{% url 'priority-add' %}" class="btn btn-primary mt-3">
                                 <i class="fas fa-plus"></i> Create First Priority
                             </a>
@@ -85,4 +92,16 @@
         </div>
     </div>
 </div>
+
+<style>
+    .color-display {
+        transition: all 0.3s ease;
+        cursor: pointer;
+    }
+
+    .color-display:hover {
+        transform: scale(1.1);
+        box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+    }
+</style>
 {% endblock %}

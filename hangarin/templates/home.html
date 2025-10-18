@@ -85,13 +85,13 @@
             </div>
         </div>
 
-        <!-- Calendar Section -->
+        <!-- Calendar Section - Fixed Grid -->
         <div class="row">
             <div class="col-md-8">
                 <div class="card">
                     <div class="card-header">
                         <div class="card-title">🗓️ Task Calendar - {{ current_month }} {{ current_year }}</div>
-                        <div class="card-category">Days with due tasks are highlighted</div>
+                        <div class="card-category">Color-coded by priority. Click days to view tasks.</div>
                     </div>
                     <div class="card-body">
                         <div class="calendar-container">
@@ -117,82 +117,74 @@
                                 <div class="col weekday casual-font">Sat</div>
                             </div>
 
-                            <!-- Calendar Days -->
+                            <!-- Calendar Days - Fixed Grid -->
                             <div class="calendar-days" id="calendar-days">
                                 <!-- Calendar will be populated by JavaScript -->
+                            </div>
+
+                            <!-- Priority Legend -->
+                            <div class="priority-legend mt-4 p-3 rounded bg-light">
+                                <h6 class="casual-font mb-2">Priority Legend:</h6>
+                                <div class="d-flex flex-wrap gap-2">
+                                    <div class="legend-item d-flex align-items-center me-3">
+                                        <div class="legend-color" style="background-color: #dc3545;"></div>
+                                        <small class="body-font">High</small>
+                                    </div>
+                                    <div class="legend-item d-flex align-items-center me-3">
+                                        <div class="legend-color" style="background-color: #ffc107;"></div>
+                                        <small class="body-font">Medium</small>
+                                    </div>
+                                    <div class="legend-item d-flex align-items-center me-3">
+                                        <div class="legend-color" style="background-color: #17a2b8;"></div>
+                                        <small class="body-font">Low</small>
+                                    </div>
+                                    <div class="legend-item d-flex align-items-center">
+                                        <div class="legend-color" style="background-color: #6c757d;"></div>
+                                        <small class="body-font">Optional</small>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
 
-            <!-- Upcoming Deadlines Sidebar -->
+            <!-- Day Tasks Sidebar -->
             <div class="col-md-4">
                 <div class="card">
                     <div class="card-header">
-                        <div class="card-title">⏰ Upcoming Deadlines</div>
-                        <div class="card-category">Next 7 days</div>
+                        <div class="card-title" id="day-title">📅 Select a Date</div>
+                        <div class="card-category" id="day-subtitle">Click on a calendar day to view tasks</div>
                     </div>
                     <div class="card-body">
-                        {% if upcoming_tasks %}
-                            <div class="upcoming-tasks">
-                                {% for task in upcoming_tasks %}
-                                <div class="upcoming-task-item mb-3 p-3 rounded" 
-                                     style="border-left: 4px solid 
-                                     {% if task.priority.name == 'High' %}#EF476F
-                                     {% elif task.priority.name == 'Medium' %}#FFD166
-                                     {% else %} #118AB2 {% endif %};">
-                                    <div class="d-flex justify-content-between align-items-start">
-                                        <div>
-                                            <h6 class="body-font mb-1">{{ task.title }}</h6>
-                                            <small class="text-muted body-font">
-                                                Due: {{ task.deadline|date:"M d, Y" }}
-                                            </small>
-                                        </div>
-                                        <span class="badge badge-{% if task.priority.name == 'High' %}danger{% elif task.priority.name == 'Medium' %}warning{% else %}info{% endif %}">
-                                            {{ task.priority }}
-                                        </span>
-                                    </div>
-                                    <div class="mt-2">
-                                        <span class="badge badge-light body-font">{{ task.category }}</span>
-                                        <span class="badge badge-{% if task.status == 'Completed' %}success{% elif task.status == 'In Progress' %}warning{% else %}secondary{% endif %}">
-                                            {{ task.status }}
-                                        </span>
-                                    </div>
-                                </div>
-                                {% endfor %}
-                            </div>
-                        {% else %}
+                        <div id="day-tasks-content">
                             <div class="text-center py-4">
-                                <i class="fas fa-calendar-check fa-3x text-muted mb-3"></i>
-                                <p class="text-muted body-font">No upcoming deadlines in the next 7 days</p>
+                                <i class="fas fa-calendar-day fa-3x text-muted mb-3"></i>
+                                <p class="text-muted body-font">Select a date from the calendar to view tasks</p>
                             </div>
-                        {% endif %}
+                        </div>
                     </div>
                 </div>
 
                 <!-- Quick Add Task -->
                 <div class="card mt-4">
                     <div class="card-header">
-                        <div class="card-title">⚡ Quick Add</div>
+                        <div class="card-title">⚡ Quick Actions</div>
                         <div class="card-category">Create a new task quickly</div>
                     </div>
                     <div class="card-body">
-                        <button class="btn btn-primary btn-block py-3" data-toggle="modal" data-target="#modalAddTask">
+                        <a href="{% url 'task-add' %}" class="btn btn-primary btn-block py-3">
                             <i class="fas fa-plus-circle"></i> Add New Task
-                        </button>
-                        <div class="row mt-3 text-center">
-                            <div class="col-6">
-                                <a href="{% url 'task-list' %}" class="btn btn-outline-info btn-sm btn-block">
-                                    <i class="fas fa-list"></i> All Tasks
-                                </a>
-                            </div>
-                            <div class="col-6">
-                                <a href="{% url 'category-list' %}" class="btn btn-outline-warning btn-sm btn-block">
-                                    <i class="fas fa-folder"></i> Categories
-                                </a>
-                            </div>
-                        </div>
+                        </a>
+
+                        <a href="{% url 'category-add' %}" class="btn btn-primary btn-block py-3">
+                            <i class="fas fa-plus-circle"></i> Add New Category
+                        </a>
+
+                        <a href="{% url 'priority-add' %}" class="btn btn-primary btn-block py-3">
+                            <i class="fas fa-plus-circle"></i> Add New Priority
+                        </a>
+                        
                     </div>
                 </div>
             </div>
@@ -217,6 +209,7 @@
                                         <th>Category</th>
                                         <th>Status</th>
                                         <th>Due Time</th>
+                                        <th>Actions</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -229,7 +222,12 @@
                                             {% endif %}
                                         </td>
                                         <td>
-                                            <span class="badge badge-{% if task.priority.name == 'High' %}danger{% elif task.priority.name == 'Medium' %}warning{% else %}info{% endif %}">
+                                            <span class="badge" 
+                                                  style="background-color: {{ task.priority.color }}; 
+                                                         color: white;
+                                                         padding: 6px 12px;
+                                                         border-radius: 15px;
+                                                         font-weight: 600;">
                                                 {{ task.priority }}
                                             </span>
                                         </td>
@@ -248,6 +246,11 @@
                                                 <span class="text-muted">All day</span>
                                             {% endif %}
                                         </td>
+                                        <td>
+                                            <a href="{% url 'task-update' task.id %}" class="btn btn-sm btn-outline-primary">
+                                                <i class="fas fa-edit"></i> 
+                                            </a>
+                                        </td>
                                     </tr>
                                     {% endfor %}
                                 </tbody>
@@ -258,12 +261,82 @@
                             <i class="fas fa-smile fa-3x text-muted mb-3"></i>
                             <h5 class="casual-font text-muted">No tasks due today!</h5>
                             <p class="text-muted body-font">Enjoy your productive day</p>
+                            <a href="{% url 'task-add' %}" class="btn btn-primary btn-sm">
+                                <i class="fas fa-plus"></i> Add Task for Today
+                            </a>
                         </div>
                         {% endif %}
                     </div>
                 </div>
+            
             </div>
         </div>
+
+        <!-- Upcoming Deadlines -->
+        <div class="row mt-4">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-header">
+                <div class="card-title">⏰ Upcoming Deadlines</div>
+                <div class="card-category">Next 7 days</div>
+            </div>
+            <div class="card-body">
+                {% if upcoming_tasks %}
+                    <div class="row">
+                        {% for task in upcoming_tasks %}
+                        <div class="col-md-6 mb-3">
+                            <div class="upcoming-task-item p-3 rounded h-100" 
+                                 style="border-left: 4px solid {{ task.priority.color }};
+                                        background: rgba(255, 255, 255, 0.7);">
+                                <div class="d-flex justify-content-between align-items-start">
+                                    <div class="flex-grow-1">
+                                        <h6 class="body-font mb-1">{{ task.title }}</h6>
+                                        <small class="text-muted body-font">
+                                            Due: {{ task.deadline|date:"M d, Y" }}
+                                        </small>
+                                    </div>
+                                    <span class="badge ml-2" 
+                                          style="background-color: {{ task.priority.color }}; 
+                                                 color: white;
+                                                 padding: 4px 8px;
+                                                 border-radius: 10px;
+                                                 font-size: 0.8rem;">
+                                        {{ task.priority }}
+                                    </span>
+                                </div>
+                                <div class="mt-2">
+                                    <span class="badge badge-light body-font">{{ task.category }}</span>
+                                    <span class="badge badge-{% if task.status == 'Completed' %}success{% elif task.status == 'In Progress' %}warning{% else %}secondary{% endif %}">
+                                        {{ task.status }}
+                                    </span>
+                                </div>
+                                <div class="mt-3">
+                                    <div class="btn-group btn-group-sm" role="group">
+                                        <a href="{% url 'task-update' task.id %}" class="btn btn-outline-primary" title="Edit Task">
+                                            <i class="fas fa-edit"></i> 
+                                        </a>
+                                        <a href="{% url 'task-detail' task.id %}" class="btn btn-outline-info" title="View Task Details">
+                                            <i class="fas fa-eye"></i> 
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <div class="text-center py-4">
+                        <i class="fas fa-calendar-check fa-3x text-muted mb-3"></i>
+                        <p class="text-muted body-font">No upcoming deadlines in the next 7 days</p>
+                        <a href="{% url 'task-add' %}" class="btn btn-primary btn-sm">
+                            <i class="fas fa-plus"></i> Add Upcoming Task
+                        </a>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
     </div>
 </div>
 
@@ -271,6 +344,7 @@
     .calendar-container {
         max-width: 100%;
         margin: 0 auto;
+        overflow: hidden;
     }
 
     .calendar-weekdays {
@@ -289,37 +363,41 @@
     .calendar-days {
         display: grid;
         grid-template-columns: repeat(7, 1fr);
-        gap: 5px;
+        gap: 4px;
+        width: 100%;
     }
 
     .calendar-day {
         aspect-ratio: 1;
         display: flex;
+        flex-direction: column;
         align-items: center;
-        justify-content: center;
-        border-radius: 10px;
+        justify-content: space-between;
+        border-radius: 8px;
         cursor: pointer;
         transition: all 0.3s ease;
         background: rgba(255, 255, 255, 0.8);
         border: 2px solid transparent;
         font-family: var(--font-body);
         font-weight: 500;
+        padding: 3px;
+        position: relative;
+        min-height: 60px;
+        max-height: 80px;
     }
 
     .calendar-day:hover {
         background: var(--sunshine-yellow);
-        transform: scale(1.05);
+        transform: scale(1.02);
     }
 
     .calendar-day.has-tasks {
-        background: linear-gradient(135deg, #FFD166, #FF9E00);
-        color: var(--ocean-blue);
-        font-weight: bold;
+        background: rgba(255, 255, 255, 0.95);
         border-color: var(--sky-blue);
     }
 
     .calendar-day.today {
-        border: 3px solid var(--sky-blue);
+        border: 2px solid var(--sky-blue);
         background: var(--sky-blue);
         color: white;
     }
@@ -330,35 +408,134 @@
     }
 
     .calendar-day.has-tasks.today {
-        background: linear-gradient(135deg, #EF476F, #FF006E);
+        background: var(--sky-blue);
         color: white;
     }
 
-    .upcoming-task-item {
-        background: rgba(255, 255, 255, 0.7);
+    .day-number {
+        font-size: 0.9rem;
+        font-weight: bold;
+        align-self: flex-start;
+    }
+
+    .task-dots {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 1px;
+        width: 100%;
+        margin-top: auto;
+    }
+
+    .task-dot {
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+        display: inline-block;
+    }
+
+    .task-count {
+        background: var(--ocean-blue);
+        color: white;
+        border-radius: 50%;
+        width: 16px;
+        height: 16px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 0.6rem;
+        font-weight: bold;
+        position: absolute;
+        top: 2px;
+        right: 2px;
+    }
+
+    .priority-legend {
+        border: 1px solid rgba(255, 209, 102, 0.3);
+        margin-top: 15px;
+    }
+
+    .legend-item {
+        margin-bottom: 3px;
+    }
+
+    .legend-color {
+        width: 12px;
+        height: 12px;
+        border-radius: 50%;
+        margin-right: 6px;
+        border: 1px solid #dee2e6;
+    }
+
+    .task-item {
+        padding: 8px;
+        margin-bottom: 6px;
+        border-radius: 6px;
+        border-left: 3px solid;
+        background: rgba(255, 255, 255, 0.8);
         transition: all 0.3s ease;
     }
 
-    .upcoming-task-item:hover {
-        background: rgba(255, 255, 255, 0.9);
-        transform: translateX(5px);
+    .task-item:hover {
+        transform: translateX(3px);
+        background: rgba(255, 255, 255, 0.95);
     }
 
     .calendar-header {
         background: rgba(255, 255, 255, 0.9);
-        padding: 15px;
-        border-radius: 15px;
+        padding: 12px;
+        border-radius: 12px;
         border: 2px solid rgba(255, 209, 102, 0.3);
+    }
+
+    .selected-day {
+        background: linear-gradient(135deg, var(--sunshine-yellow), #ff9e00) !important;
+        color: var(--ocean-blue);
+        font-weight: bold;
+    }
+
+    .upcoming-task-item {
+        transition: all 0.3s ease;
+    }
+
+    .upcoming-task-item:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+        background: rgba(255, 255, 255, 0.9) !important;
+    }
+
+    /* Responsive adjustments */
+    @media (max-width: 768px) {
+        .calendar-day {
+            min-height: 50px;
+            max-height: 60px;
+            padding: 2px;
+        }
+        
+        .day-number {
+            font-size: 0.8rem;
+        }
+        
+        .task-dot {
+            width: 4px;
+            height: 4px;
+        }
+        
+        .task-count {
+            width: 14px;
+            height: 14px;
+            font-size: 0.5rem;
+        }
     }
 </style>
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    // Calendar data from Django
-    const calendarData = {{ calendar_data | safe }};
+    const calendarData = {{ calendar_data|safe }};
     const tasksByDate = {{ tasks_by_date|safe }};
     
     let currentDate = new Date();
+    let selectedDate = null;
     
     function renderCalendar() {
         const calendarDays = document.getElementById('calendar-days');
@@ -380,58 +557,172 @@ document.addEventListener('DOMContentLoaded', function() {
         // Previous month days
         const prevMonthLastDay = new Date(year, month, 0).getDate();
         for (let i = startingDay - 1; i >= 0; i--) {
-            const dayElement = document.createElement('div');
-            dayElement.className = 'calendar-day other-month';
-            dayElement.textContent = prevMonthLastDay - i;
-            calendarDays.appendChild(dayElement);
+            createDayElement(prevMonthLastDay - i, true, false, []);
         }
         
         // Current month days
         const today = new Date();
         for (let day = 1; day <= daysInMonth; day++) {
-            const dayElement = document.createElement('div');
             const dateKey = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+            const dayTasks = tasksByDate[dateKey] || [];
+            const isToday = today.getDate() === day && 
+                           today.getMonth() === month && 
+                           today.getFullYear() === year;
+            const isSelected = selectedDate === dateKey;
             
-            dayElement.className = 'calendar-day';
-            dayElement.textContent = day;
-            
-            // Check if today
-            if (today.getDate() === day && 
-                today.getMonth() === month && 
-                today.getFullYear() === year) {
-                dayElement.classList.add('today');
-            }
-            
-            // Check if has tasks
-            if (tasksByDate[dateKey]) {
-                dayElement.classList.add('has-tasks');
-                dayElement.title = `${tasksByDate[dateKey].length} task(s) due`;
-            }
-            
-            calendarDays.appendChild(dayElement);
+            createDayElement(day, false, isToday, dayTasks, isSelected, dateKey);
         }
         
         // Next month days
         const totalCells = 42; // 6 weeks
         const remainingCells = totalCells - (startingDay + daysInMonth);
         for (let day = 1; day <= remainingCells; day++) {
-            const dayElement = document.createElement('div');
-            dayElement.className = 'calendar-day other-month';
-            dayElement.textContent = day;
-            calendarDays.appendChild(dayElement);
+            createDayElement(day, true, false, []);
         }
+    }
+    
+    function createDayElement(day, isOtherMonth, isToday, tasks, isSelected = false, dateKey = null) {
+        const calendarDays = document.getElementById('calendar-days');
+        const dayElement = document.createElement('div');
+        
+        dayElement.className = 'calendar-day';
+        if (isOtherMonth) dayElement.classList.add('other-month');
+        if (isToday) dayElement.classList.add('today');
+        if (tasks.length > 0) dayElement.classList.add('has-tasks');
+        if (isSelected) dayElement.classList.add('selected-day');
+        
+        // Day number
+        const dayNumber = document.createElement('div');
+        dayNumber.className = 'day-number';
+        dayNumber.textContent = day;
+        dayElement.appendChild(dayNumber);
+        
+        // Task dots (show up to 4 dots for different priorities)
+        if (tasks.length > 0) {
+            const taskDots = document.createElement('div');
+            taskDots.className = 'task-dots';
+            
+            // Get unique priority colors for this day
+            const uniqueColors = [...new Set(tasks.map(task => task.priority_color))];
+            const colorsToShow = uniqueColors.slice(0, 4); // Show max 4 dots
+            
+            colorsToShow.forEach(color => {
+                const dot = document.createElement('div');
+                dot.className = 'task-dot';
+                dot.style.backgroundColor = color;
+                taskDots.appendChild(dot);
+            });
+            
+            dayElement.appendChild(taskDots);
+            
+            // Task count badge if more than 4 unique priorities
+            if (uniqueColors.length > 4) {
+                const taskCount = document.createElement('div');
+                taskCount.className = 'task-count';
+                taskCount.textContent = '+';
+                dayElement.appendChild(taskCount);
+            }
+            
+            // Tooltip with task count
+            dayElement.title = `${tasks.length} task(s) due`;
+        }
+        
+        // Click event
+        if (!isOtherMonth && dateKey) {
+            dayElement.addEventListener('click', function() {
+                selectDate(dateKey, tasks);
+            });
+        }
+        
+        calendarDays.appendChild(dayElement);
+    }
+    
+    function selectDate(dateKey, tasks) {
+        selectedDate = dateKey;
+        
+        // Update day title
+        const date = new Date(dateKey);
+        const formattedDate = date.toLocaleDateString('en-US', { 
+            weekday: 'long', 
+            year: 'numeric', 
+            month: 'long', 
+            day: 'numeric' 
+        });
+        
+        document.getElementById('day-title').textContent = `📅 ${formattedDate}`;
+        document.getElementById('day-subtitle').textContent = `${tasks.length} task(s) due`;
+        
+        // Update tasks content
+        const tasksContent = document.getElementById('day-tasks-content');
+        
+        if (tasks.length > 0) {
+            let tasksHTML = '';
+            
+            tasks.forEach(task => {
+                tasksHTML += `
+                    <div class="task-item" style="border-left-color: ${task.priority_color}">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <div class="flex-grow-1">
+                                <h6 class="body-font mb-1">${task.title}</h6>
+                                <div class="d-flex align-items-center">
+                                    <span class="badge me-2" style="background-color: ${task.priority_color}; color: white; font-size: 0.7rem;">
+                                        ${task.priority_name}
+                                    </span>
+                                    <span class="badge badge-${task.status === 'Completed' ? 'success' : task.status === 'In Progress' ? 'warning' : 'secondary'}" style="font-size: 0.7rem;">
+                                        ${task.status}
+                                    </span>
+                                </div>
+                            </div>
+                            <a href="/tasks/${task.id}/" class="btn btn-sm btn-outline-primary">
+                                <i class="fas fa-edit"></i>
+                            </a>
+                        </div>
+                    </div>
+                `;
+            });
+            
+            tasksContent.innerHTML = tasksHTML;
+        } else {
+            tasksContent.innerHTML = `
+                <div class="text-center py-4">
+                    <i class="fas fa-check-circle fa-3x text-muted mb-3"></i>
+                    <p class="text-muted body-font">No tasks due on this date</p>
+                    <a href="{% url 'task-add' %}" class="btn btn-primary btn-sm">
+                        <i class="fas fa-plus"></i> Add Task
+                    </a>
+                </div>
+            `;
+        }
+        
+        // Re-render calendar to show selected state
+        renderCalendar();
     }
     
     // Navigation
     document.getElementById('prev-month').addEventListener('click', function() {
         currentDate.setMonth(currentDate.getMonth() - 1);
+        selectedDate = null;
         renderCalendar();
+        resetDayView();
     });
     
     document.getElementById('next-month').addEventListener('click', function() {
         currentDate.setMonth(currentDate.getMonth() + 1);
+        selectedDate = null;
         renderCalendar();
+        resetDayView();
     });
+    
+    function resetDayView() {
+        document.getElementById('day-title').textContent = '📅 Select a Date';
+        document.getElementById('day-subtitle').textContent = 'Click on a calendar day to view tasks';
+        document.getElementById('day-tasks-content').innerHTML = `
+            <div class="text-center py-4">
+                <i class="fas fa-calendar-day fa-3x text-muted mb-3"></i>
+                <p class="text-muted body-font">Select a date from the calendar to view tasks</p>
+            </div>
+        `;
+    }
     
     // Initial render
     renderCalendar();
