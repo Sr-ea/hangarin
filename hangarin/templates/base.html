@@ -5,10 +5,18 @@
 	<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
 	<title>{% block title %}Hangarin - Task Manager{% endblock %}</title>
 	<meta content='width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0, shrink-to-fit=no' name='viewport' />
-	<link rel="stylesheet" href="{% static 'css/bootstrap.min.css' %}">
+	<link rel="stylesheet" href="{% static 'css/soft-ui-dashboard.min.css' %}">
+	<link rel="stylesheet" href="{% static 'css/nucleo-icons.min.css' %}">
+	<link rel="stylesheet" href="{% static 'css/form.min.css' %}">
+	<link rel="stylesheet" href="{% static 'css/widget.min.css' %}">
 	<link href="https://fonts.googleapis.com/css2?family=Abril+Fatface&family=Itim&family=Lato:ital,wght@0,100;0,300;0,400;0,700;0,900;1,100;1,300;1,400;1,700;1,900&display=swap" rel="stylesheet">
-	<link rel="stylesheet" href="{% static 'css/ready.css' %}">
-	<link rel="stylesheet" href="{% static 'css/demo.css' %}">
+	<link rel="stylesheet" href="{% static 'css/soft-ui-dashboard.css' %}">
+	<link rel="stylesheet" href="{% static 'css/widget.css' %}">
+	<link rel="stylesheet" href="{% static 'css/form.css' %}">
+	<link rel="stylesheet" href="{% static 'css/nucleo-svg.css' %}">
+	<link rel="stylesheet" href="{% static 'css/nucleo-icons.css' %}">
+	<link rel="stylesheet" href="{% static 'css/custom.css' %}">
+	<link rel="stylesheet" href="{% static 'css/bootstrap.css' %}">
 	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 	
 	<style>
@@ -29,65 +37,275 @@
 			font-family: 'Itim', sans-serif;
 			font-weight: 400;
 			line-height: 1.6;
+			transition: all 0.3s ease;
 		}
 
 		.wrapper {
 			background: transparent;
+			display: flex;
+			flex-direction: column;
+			min-height: 100vh;
 		}
 
-		/* Sidebar Styling */
-		.sidebar {
-			background: var(--sidebar-gradient) !important;
-			border-right: 3px solid var(--sunshine-yellow);
-		}
-
-		.sidebar .nav-item a {
-			color: #e7eff3;
-			border-radius: 10px;
-			margin: 5px 15px;
-			transition: all 0.3s ease;
-		}
-
-		.sidebar .nav-item a:hover {
-			background: rgba(16, 36, 97, 0.2);
-			color: #FFD166;
-			transform: translateX(5px);
-		}
-
-		.sidebar .nav-item.active a {
-			background: var(--sunshine-yellow);
-			color: var(--ocean-blue);
-			font-weight: bold;
-		}
-
-		.sidebar .user {
-			background: #dae9f1;
-            text-emphasis-color:var(--cloud-white);
-			border-radius: 15px;
-			margin: 15px;
-			padding: 15px;
-			border: 1px solid rgba(227, 227, 226, 0.3);
-		}
-
-		.sidebar .user .info span {
-			color: #FFD166;
-		}
-
-		/* Header Styling */
-		.main-header {
+		/* Top Navigation Bar */
+		.top-navbar {
 			background: rgba(255, 255, 255, 0.95);
 			backdrop-filter: blur(10px);
 			border-bottom: 2px solid var(--sunshine-yellow);
 			box-shadow: 0 4px 15px rgba(17, 138, 178, 0.1);
+			position: sticky;
+			top: 0;
+			z-index: 1000;
+			padding: 10px 20px;
 		}
 
-		.logo-header .logo {
+		
+		.navbar-content {
+			display: flex;
+			align-items: center;
+			justify-content: space-between;
+		}
+
+		.navbar-left {
+			display: flex;
+			align-items: center;
+			gap: 20px;
+		}
+
+		.navbar-right {
+			display: flex;
+			align-items: center;
+			gap: 15px;
+		}
+
+		.logo {
 			color: var(--ocean-blue);
 			font-weight: 800;
 			font-size: 1.5rem;
+			font-family: 'Itim', cursive;
+			text-decoration: none;
+			display: flex;
+			align-items: center;
+			gap: 10px;
 		}
 
-		/* Card Styling */
+		.search-bar {
+			position: relative;
+			width: 300px;
+		}
+
+		.search-bar input {
+			width: 100%;
+			padding: 8px 15px;
+			border-radius: 20px;
+			border: 1px solid var(--sky-blue);
+			background: rgba(255, 255, 255, 0.8);
+			font-family: 'Itim', cursive;
+		}
+
+		.nav-button {
+			background: none;
+			border: none;
+			color: var(--ocean-blue);
+			font-size: 1.2rem;
+			cursor: pointer;
+			padding: 8px 12px;
+			border-radius: 8px;
+			transition: all 0.3s ease;
+			display: flex;
+			align-items: center;
+			gap: 5px;
+			font-family: 'Itim', cursive;
+		}
+
+		.nav-button:hover {
+			background: rgba(17, 138, 178, 0.1);
+			transform: scale(1.05);
+		}
+
+		.profile-dropdown {
+			position: relative;
+		}
+
+		.profile-button {
+			display: flex;
+			align-items: center;
+			gap: 8px;
+			background: none;
+			border: none;
+			cursor: pointer;
+			padding: 5px 10px;
+			border-radius: 20px;
+			transition: all 0.3s ease;
+		}
+
+		.profile-button:hover {
+			background: rgba(17, 138, 178, 0.1);
+		}
+
+		.profile-pic {
+    border-radius: 50% !important;
+    object-fit: cover !important;
+}
+
+.header-profile-photo img {
+    border-radius: 50% !important;
+    object-fit: cover !important;
+}
+
+.profile-button img {
+    border-radius: 50% !important;
+    object-fit: cover !important;
+}
+
+.dropdown-menu .u-img img {
+    border-radius: 50% !important;
+    object-fit: cover !important;
+}
+
+/* Ensure consistent sizing */
+.profile-pic,
+.header-profile-photo img,
+.profile-button img {
+    width: 36px;
+    height: 36px;
+    border: 2px solid var(--sunshine-yellow);
+}
+
+.dropdown-menu .u-img img {
+    width: 60px;
+    height: 60px;
+    border: 2px solid var(--sunshine-yellow);
+}
+		.dropdown-menu {
+			position: absolute;
+			right: 0;
+			top: 100%;
+			background: white;
+			border-radius: 10px;
+			box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+			min-width: 200px;
+			display: none;
+			z-index: 1001;
+			border: 1px solid var(--sunshine-yellow);
+		}
+
+		.dropdown-menu.show {
+			display: block;
+		}
+
+		.dropdown-item {
+			padding: 10px 15px;
+			display: flex;
+			align-items: center;
+			gap: 10px;
+			text-decoration: none;
+			color: var(--ocean-blue);
+			border-bottom: 1px solid #f0f0f0;
+			transition: all 0.3s ease;
+		}
+
+		.dropdown-item:hover {
+			background: rgba(17, 138, 178, 0.1);
+		}
+
+		.dropdown-item:last-child {
+			border-bottom: none;
+		}
+
+		/* Left Sidebar */
+		.left-sidebar {
+			position: fixed;
+			left: -300px;
+			top: 0;
+			width: 300px;
+			height: 100vh;
+			background: var(--sidebar-gradient);
+			transition: all 0.3s ease;
+			z-index: 1002;
+			border-right: 3px solid var(--sunshine-yellow);
+			overflow-y: auto;
+		}
+
+		.left-sidebar.open {
+			left: 0;
+		}
+
+		.sidebar-header {
+			padding: 20px;
+			border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+			display: flex;
+			justify-content: space-between;
+			align-items: center;
+		}
+
+		.sidebar-title {
+			color: white;
+			font-size: 1.2rem;
+			font-family: 'Itim', cursive;
+		}
+
+		.close-sidebar {
+			background: none;
+			border: none;
+			color: white;
+			font-size: 1.2rem;
+			cursor: pointer;
+		}
+
+		.sidebar-nav {
+			padding: 20px;
+		}
+
+		.sidebar-nav-item {
+			margin-bottom: 10px;
+		}
+
+		.sidebar-nav-item a {
+			display: flex;
+			align-items: center;
+			gap: 10px;
+			padding: 12px 15px;
+			color: white;
+			text-decoration: none;
+			border-radius: 8px;
+			transition: all 0.3s ease;
+		}
+
+		.sidebar-nav-item a:hover {
+			background: rgba(255, 255, 255, 0.1);
+			transform: translateX(5px);
+		}
+
+		.sidebar-overlay {
+			position: fixed;
+			top: 0;
+			left: 0;
+			width: 100%;
+			height: 100%;
+			background: rgba(0,0,0,0.5);
+			z-index: 1001;
+			display: none;
+		}
+
+		.sidebar-overlay.show {
+			display: block;
+		}
+
+		/* Main Content */
+		.main-content {
+			flex: 1;
+			padding: 20px;
+			margin-top: 0;
+			transition: all 0.3s ease;
+		}
+
+		/* When sidebar is open, shift main content slightly */
+		.left-sidebar.open + .sidebar-overlay + .main-content {
+			margin-left: 300px;
+		}
+
+		/* Rest of your existing card and component styles remain the same */
 		.card {
 			background: var(--card-gradient);
 			border: none;
@@ -115,14 +333,15 @@
 			color: var(--ocean-blue);
 			font-weight: 700;
 			font-size: 1.3rem;
+			font-family: 'Itim', cursive;
 		}
 
 		.card-category {
 			color: var(--sky-blue);
 			font-weight: 500;
+			font-family: 'Itim', cursive;
 		}
 
-		/* Button Styling */
 		.btn-primary {
 			background: linear-gradient(135deg, var(--sky-blue), var(--ocean-blue));
 			border: none;
@@ -131,97 +350,13 @@
 			font-weight: 600;
 			box-shadow: 0 4px 15px rgba(17, 138, 178, 0.3);
 			transition: all 0.3s ease;
+			font-family: 'Itim', cursive;
 		}
 
 		.btn-primary:hover {
 			transform: translateY(-2px);
 			box-shadow: 0 6px 20px rgba(17, 138, 178, 0.4);
 			background: linear-gradient(135deg, var(--ocean-blue), var(--sky-blue));
-		}
-
-		.btn-success {
-			background: linear-gradient(135deg, #06D6A0, #118AB2);
-			border: none;
-			border-radius: 25px;
-			box-shadow: 0 4px 15px rgba(6, 214, 160, 0.3);
-		}
-
-		/* Table Styling */
-		.table {
-			background: rgba(255, 255, 255, 0.8);
-			border-radius: 15px;
-			overflow: hidden;
-		}
-
-		.table thead th {
-			background: linear-gradient(135deg, var(--sky-blue), var(--ocean-blue));
-			color: white;
-			border: none;
-			padding: 15px;
-			font-weight: 600;
-		}
-
-		.table tbody tr {
-			transition: all 0.3s ease;
-		}
-
-		.table tbody tr:hover {
-			background: rgba(255, 209, 102, 0.1);
-			transform: scale(1.01);
-		}
-
-		.table tbody td {
-			padding: 15px;
-			border-bottom: 1px solid rgba(17, 138, 178, 0.1);
-		}
-
-		/* Badge Styling */
-		.badge {
-			border-radius: 15px;
-			padding: 6px 12px;
-			font-weight: 600;
-		}
-
-		.badge-success {
-			background: linear-gradient(135deg, #06D6A0, #118AB2);
-		}
-
-		.badge-warning {
-			background: linear-gradient(135deg, #FFD166, #FF9E00);
-			color: var(--ocean-blue);
-		}
-
-		.badge-secondary {
-			background: linear-gradient(135deg, #6C757D, #495057);
-		}
-
-		.badge-danger {
-			background: linear-gradient(135deg, #EF476F, #FF006E);
-		}
-
-		.badge-info {
-			background: linear-gradient(135deg, #cde3ea, #073B4C);
-		}
-
-		/* Form Styling */
-		.form-control {
-			border: 2px solid rgba(17, 138, 178, 0.2);
-			border-radius: 15px;
-			padding: 12px 15px;
-			transition: all 0.3s ease;
-		}
-
-		.form-control:focus {
-			border-color: var(--sky-blue);
-			box-shadow: 0 0 0 0.2rem rgba(17, 138, 178, 0.25);
-		}
-
-		/* Footer Styling */
-		.footer {
-			background: rgba(255, 255, 255, 0.9);
-			backdrop-filter: blur(10px);
-			border-top: 2px solid var(--sunshine-yellow);
-			color: var(--ocean-blue);
 		}
 
 		/* Animation */
@@ -240,187 +375,141 @@
 			animation: fadeInUp 0.6s ease-out;
 		}
 
-		/* Custom Scrollbar */
-		::-webkit-scrollbar {
-			width: 8px;
+		/* Responsive */
+		@media (max-width: 768px) {
+			.navbar-content {
+				flex-wrap: wrap;
+			}
+
+			.search-bar {
+				width: 200px;
+			}
+
+			.nav-button span {
+				display: none;
+			}
+
+			.left-sidebar {
+				width: 280px;
+			}
+
+			/* On mobile, sidebar overlay should cover entire screen */
+			.left-sidebar.open + .sidebar-overlay + .main-content {
+				margin-left: 0;
+			}
 		}
 
-		::-webkit-scrollbar-track {
-			background: rgba(255, 255, 255, 0.1);
-		}
+		@media (max-width: 576px) {
+			.search-bar {
+				width: 150px;
+			}
 
-		::-webkit-scrollbar-thumb {
-			background: linear-gradient(135deg, var(--sunshine-yellow), var(--sky-blue));
-			border-radius: 10px;
-		}
+			.navbar-left {
+				gap: 10px;
+			}
 
-		/* Page Title */
-		.page-title {
-			color: var(--ocean-blue);
-			font-weight: 800;
-			font-size: 2rem;
-			margin-bottom: 1rem;
-			text-shadow: 2px 2px 4px rgba(255, 255, 255, 0.5);
-		}
-
-		/* Icon Styling */
-		.la, .fas {
-			color: var(--sky-blue);
-		}
-
-		.nav-item.active .la,
-		.nav-item.active .fas {
-			color: var(--ocean-blue);
+			.navbar-right {
+				gap: 10px;
+			}
 		}
 	</style>
 </head>
 <body>
 	<div class="wrapper">
-		<div class="main-header">
-			<div class="logo-header">
-				<a href="{% url 'home' %}" class="logo">
-					<i class="fas fa-tasks"></i> Hangarin
-				</a>
-				<button class="navbar-toggler sidenav-toggler ml-auto" type="button" data-toggle="collapse" data-target="collapse" aria-controls="sidebar" aria-expanded="false" aria-label="Toggle navigation">
-					<span class="navbar-toggler-icon"></span>
-				</button>
-				<button class="topbar-toggler more"><i class="la la-ellipsis-v"></i></button>
-			</div>
-			<nav class="navbar navbar-header navbar-expand-lg">
-				<div class="container-fluid">
-					<form class="navbar-left navbar-form nav-search mr-md-3" action="">
-						<div class="input-group">
-							<input type="text" placeholder="🔍 Search tasks..." class="form-control">
-							<div class="input-group-append">
-								<span class="input-group-text">
-									<i class="la la-search search-icon"></i>
-								</span>
-							</div>
-						</div>
-					</form>
-					<ul class="navbar-nav topbar-nav ml-md-auto align-items-center">
-						<li class="nav-item dropdown">
-							<a class="dropdown-toggle profile-pic" data-toggle="dropdown" href="#" aria-expanded="false"> 
-								<img src="{% static 'img/profile_ko.jpg' %}" alt="user-img" width="36" class="img-circle">
-								<span>Welcome!</span>
-							</a>
-							<ul class="dropdown-menu dropdown-user">
-								<li>
-									<div class="user-box">
-										<div class="u-img"><img src="{% static 'img/profile_ko.jpg' %}" alt="user"></div>
-										<div class="u-text">
-											<h4>ria</h4>
-											<p class="text-muted">cute</p>
-										</div>
-									</div>
-								</li>
-								<div class="dropdown-divider"></div>
-								<a class="dropdown-item" href="#"><i class="ti-user"></i> My Profile</a>
-								<a class="dropdown-item" href="#"><i class="ti-settings"></i> Settings</a>
-								<div class="dropdown-divider"></div>
-								<a class="dropdown-item" href="#"><i class="fa fa-power-off"></i> Logout</a>
-							</ul>
-						</li>
-					</ul>
+		<!-- Top Navigation Bar -->
+		<nav class="top-navbar">
+			<div class="navbar-content">
+				<div class="navbar-left">
+					<button class="nav-button" id="sidebarToggler">
+						<i class="fas fa-bars"></i>
+						<span>Menu</span>
+					</button>
 				</div>
-			</nav>
-		</div>
-		<div class="sidebar">
-			<div class="scrollbar-inner sidebar-wrapper">
-				<div class="user">
-					<div class="photo">
-						<img src="{% static 'img/profile_ko.jpg' %}">
-					</div>
-					<div class="info">
-						<a class="" data-toggle="collapse" href="#collapseExample" aria-expanded="true">
-							<span>
-								cute lang
-								<span class="user-level">Productivity Hub</span>
-								<span class="caret"></span>
-							</span>
-						</a>
-						<div class="clearfix"></div>
-						<div class="collapse in" id="collapseExample" aria-expanded="true" style="">
-							<ul class="nav">
-								<li>
-									<a href="#stats">
-										<span class="link-collapse">Dashboard</span>
-									</a>
-								</li>
-								<li>
-									<a href="#settings">
-										<span class="link-collapse">Settings</span>
-									</a>
-								</li>
-							</ul>
-						</div>
-					</div>
+
+				<div class="navbar-left">
+					<a href="{% url 'home' %}" class="logo">
+						<i class="fas fa-tasks"></i> Hangarin
+					</a>
 				</div>
-				<ul class="nav">
-					<li class="nav-item {% if request.path == '/' %}active{% endif %}">
-						<a href="{% url 'home' %}">
-							<i class="fas fa-home"></i>
-							<p>Dashboard</p>
-						</a>
-					</li>
-					<li class="nav-item">
-						<a href="{% url 'task-list' %}">
-							<i class="fas fa-tasks"></i>
-							<p>All Tasks</p>
-						</a>
-					</li>
-					<li class="nav-item">
-						<a href="{% url 'category-list' %}">
-							<i class="fa-solid fa-bookmark"></i>
-							<p>Categories</p>
-						</a>
-					</li>
-					<li class="nav-item">
-						<a href="{% url 'priority-list' %}">
-							<i class="fas fa-flag"></i>
-							<p>Priorities</p>
-						</a>
-					</li>
-					<li class="nav-item">
-						<a href="{% url 'note-list' %}">
-							<i class="fas fa-sticky-note"></i>
-							<p>Notes</p>
-						</a>
-					</li>
-					<li class="nav-item">
-						<a href="{% url 'subtask-list' %}">
-							<i class="fas fa-check-square"></i>
-							<p>Subtasks</p>
-						</a>
-					</li>
-					<li class="nav-item update-pro">
-						<button data-toggle="modal" data-target="#modalAddTask" class="w-100 text-left">
-							<i class="fas fa-plus-circle"></i>
-							<p>Add New Task</p>
+
+				<div class="navbar-right">
+					<div class="profile-dropdown">
+						<button class="profile-button">
+							<img src="{% static 'img/profile_ko.jpg' %}" alt="Profile" class="profile-pic">
+							<span>Welcome!</span>
 						</button>
-					</li>
-				</ul>
+						<div class="dropdown-menu" id="profileDropdown">
+							<a href="#" class="dropdown-item">
+								<i class="fas fa-user"></i> My Account
+							</a>
+							<a href="#" class="dropdown-item">
+								<i class="fas fa-cog"></i> Settings
+							</a>
+							<div class="dropdown-divider"></div>
+							<a href="#" class="dropdown-item">
+								<i class="fas fa-sign-out-alt"></i> Logout
+							</a>
+						</div>
+					</div>
+				</div>
+			</div>
+		</nav>
+
+		<!-- Left Sidebar -->
+		<div class="left-sidebar" id="leftSidebar">
+			<div class="sidebar-header">
+				<h3 class="sidebar-title">Hangarin</h3>
+				<button class="close-sidebar" id="closeSidebarBtn">
+					<i class="fas fa-times"></i>
+				</button>
+			</div>
+			<div class="sidebar-nav">
+				<div class="sidebar-nav-item">
+					<a href="{% url 'home' %}">
+						<i class="fas fa-home"></i>
+						<span>Dashboard</span>
+					</a>
+				</div>
+				<div class="sidebar-nav-item">
+					<a href="{% url 'task-list' %}">
+						<i class="fas fa-tasks"></i>
+						<span>All Tasks</span>
+					</a>
+				</div>
+				<div class="sidebar-nav-item">
+					<a href="{% url 'category-list' %}">
+						<i class="fa-solid fa-bookmark"></i>
+						<span>Categories</span>
+					</a>
+				</div>
+				<div class="sidebar-nav-item">
+					<a href="{% url 'priority-list' %}">
+						<i class="fas fa-flag"></i>
+						<span>Priorities</span>
+					</a>
+				</div>
+				<div class="sidebar-nav-item">
+					<a href="{% url 'note-list' %}">
+						<i class="fas fa-sticky-note"></i>
+						<span>Notes</span>
+					</a>
+				</div>
+				<div class="sidebar-nav-item">
+					<a href="{% url 'subtask-list' %}">
+						<i class="fas fa-check-square"></i>
+						<span>Subtasks</span>
+					</a>
+				</div>
 			</div>
 		</div>
-		<div class="main-panel">
+
+		<!-- Sidebar Overlay -->
+		<div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+		<!-- Main Content -->
+		<div class="main-content">
 			{% block content %}
 			{% endblock %}
-			<footer class="footer">
-				<div class="container-fluid">
-					<nav class="pull-left">
-						<ul class="nav">
-							<li class="nav-item">
-								<a class="nav-link" href="{% url 'home' %}">
-									<i class="fas fa-tasks"></i> Hangarin
-								</a>
-							</li>
-						</ul>
-					</nav>
-					<div class="copyright ml-auto">
-						{{ current_year }}, made with <i class="fas fa-heart text-danger"></i> para sa grades
-					</div>				
-				</div>
-			</footer>
 		</div>
 	</div>
 
@@ -456,18 +545,75 @@
 	<script src="{% static 'js/ready.min.js' %}"></script>
 
 	<script>
-		// Set current year in footer
 		document.addEventListener('DOMContentLoaded', function() {
-			const yearElement = document.querySelector('.copyright');
-			if (yearElement) {
-				const currentYear = new Date().getFullYear();
-				yearElement.innerHTML = yearElement.innerHTML.replace('{{ current_year }}', currentYear);
+			const sidebarToggler = document.getElementById('sidebarToggler');
+			const leftSidebar = document.getElementById('leftSidebar');
+			const closeSidebarBtn = document.getElementById('closeSidebarBtn');
+			const sidebarOverlay = document.getElementById('sidebarOverlay');
+			const profileButton = document.querySelector('.profile-button');
+			const profileDropdown = document.getElementById('profileDropdown');
+
+			// Function to open sidebar
+			function openSidebar() {
+				leftSidebar.classList.add('open');
+				sidebarOverlay.classList.add('show');
 			}
+
+			// Function to close sidebar
+			function closeSidebar() {
+				leftSidebar.classList.remove('open');
+				sidebarOverlay.classList.remove('show');
+			}
+
+			// Toggle left sidebar
+			sidebarToggler.addEventListener('click', function() {
+				if (leftSidebar.classList.contains('open')) {
+					closeSidebar();
+				} else {
+					openSidebar();
+				}
+			});
+
+			// Close sidebar with close button
+			closeSidebarBtn.addEventListener('click', function() {
+				closeSidebar();
+			});
+
+			// Close sidebar when clicking overlay
+			sidebarOverlay.addEventListener('click', function() {
+				closeSidebar();
+			});
+
+			// Toggle profile dropdown
+			profileButton.addEventListener('click', function(e) {
+				e.stopPropagation();
+				profileDropdown.classList.toggle('show');
+			});
+
+			// Close dropdown when clicking elsewhere
+			document.addEventListener('click', function() {
+				profileDropdown.classList.remove('show');
+			});
 
 			// Add animation to cards on load
 			const cards = document.querySelectorAll('.card');
 			cards.forEach((card, index) => {
 				card.style.animationDelay = `${index * 0.1}s`;
+			});
+
+			// Close sidebar when clicking on a link
+			const sidebarLinks = document.querySelectorAll('.sidebar-nav-item a, .sidebar-nav-item button');
+			sidebarLinks.forEach(link => {
+				link.addEventListener('click', function() {
+					closeSidebar();
+				});
+			});
+
+			// Close sidebar when pressing Escape key
+			document.addEventListener('keydown', function(e) {
+				if (e.key === 'Escape') {
+					closeSidebar();
+				}
 			});
 		});
 	</script>

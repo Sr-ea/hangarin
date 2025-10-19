@@ -11,12 +11,68 @@
             </a>
         </div>
 
+        <!-- Search and Filter Card -->
+        <div class="row">
+            <div class="col-md-12">
+                <div class="card">
+                    <div class="card-body">
+                        <form method="get" class="form-inline">
+                            <!-- Search Input -->
+                            <div class="form-group mr-3 mb-2">
+                                <label for="searchInput" class="sr-only">Search</label>
+                                <div class="input-group">
+                                    <div class="input-group-prepend">
+                                        <span class="input-group-text"><i class="fas fa-search"></i></span>
+                                    </div>
+                                    <input type="text" 
+                                           class="form-control" 
+                                           id="searchInput" 
+                                           name="q" 
+                                           placeholder="Search note content or task titles..." 
+                                           value="{{ search_query }}">
+                                </div>
+                            </div>
+
+                            <!-- Sort Dropdown -->
+                            <div class="form-group mr-3 mb-2">
+                                <label for="sortSelect" class="sr-only">Sort By</label>
+                                <select class="form-control" id="sortSelect" name="sort_by">
+                                    {% for option in sort_options %}
+                                        <option value="{{ option.value }}" 
+                                                {% if current_sort == option.value %}selected{% endif %}>
+                                            {{ option.label }}
+                                        </option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+
+                            <!-- Buttons -->
+                            <button type="submit" class="btn btn-primary mb-2 mr-2">
+                                <i class="fas fa-search"></i>
+                            </button>
+                            <a href="{% url 'note-list' %}" class="btn btn-outline-secondary mb-2">
+                                <i class="fas fa-times"></i>
+                            </a>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+
+        <!-- Notes List -->
         <div class="row">
             <div class="col-md-12">
                 <div class="card">
                     <div class="card-header">
                         <div class="card-title">All Notes</div>
-                        <div class="card-category">Manage your task notes</div>
+                        <div class="card-category">
+                            {% if notes %}
+                                Showing {{ notes|length }} of {{ total_notes }} note{{ total_notes|pluralize }}
+                            {% else %}
+                                No notes found
+                            {% endif %}
+                        </div>
                     </div>
                     <div class="card-body">
                         {% if notes %}
@@ -28,8 +84,10 @@
                                         <div>
                                             <h6 class="card-title mb-0 casual-font">
                                                 {% if note.task %}
+                                                    <i class="fas fa-link text-primary mr-1"></i>
                                                     Note for: {{ note.task.title }}
                                                 {% else %}
+                                                    <i class="fas fa-sticky-note text-warning mr-1"></i>
                                                     General Note
                                                 {% endif %}
                                             </h6>
@@ -44,15 +102,33 @@
                                         </div>
                                     </div>
                                     <div class="card-body">
-                                        <p class="card-text body-font">{{ note.content|truncatewords:30 }}</p>
+                                        <p class="card-text body-font">
+                                            {% if search_query %}
+                                                {% with content=note.content %}
+                                                    {% if search_query in content %}
+                                                        {{ content|truncatewords:50 }}
+                                                    {% else %}
+                                                        {{ content|truncatewords:30 }}
+                                                    {% endif %}
+                                                {% endwith %}
+                                            {% else %}
+                                                {{ note.content|truncatewords:30 }}
+                                            {% endif %}
+                                        </p>
                                         <div class="d-flex justify-content-between align-items-center">
                                             <small class="text-muted body-font">
-                                                Created: {{ note.created_at|date:"M d, Y" }}
+                                                <i class="far fa-clock mr-1"></i>
+                                                {{ note.created_at|date:"M d, Y" }}
                                             </small>
                                             {% if note.task %}
-                                            <span class="badge badge-info body-font">
+                                            <span class="badge 
+                                                {% if note.task.status == 'Completed' %}badge-success
+                                                {% elif note.task.status == 'In Progress' %}badge-warning
+                                                {% else %}badge-info{% endif %} body-font">
                                                 {{ note.task.status }}
                                             </span>
+                                            {% else %}
+                                            <span class="badge badge-secondary body-font">No Task</span>
                                             {% endif %}
                                         </div>
                                     </div>
@@ -62,12 +138,21 @@
                         </div>
                         {% else %}
                         <div class="text-center py-5">
-                            <i class="fas fa-sticky-note fa-4x text-muted mb-3"></i>
-                            <h4 class="text-muted casual-font">No notes yet</h4>
-                            <p class="text-muted body-font">Create your first note for tasks</p>
-                            <a href="{% url 'note-add' %}" class="btn btn-primary mt-3">
-                                <i class="fas fa-plus"></i> Create First Note
-                            </a>
+                            {% if search_query %}
+                                <i class="fas fa-search fa-4x text-muted mb-3"></i>
+                                <h4 class="text-muted casual-font">No notes found</h4>
+                                <p class="text-muted body-font">No notes match your search "{{ search_query }}"</p>
+                                <a href="{% url 'note-list' %}" class="btn btn-outline-secondary mt-3">
+                                    <i class="fas fa-refresh"></i> Clear Search
+                                </a>
+                            {% else %}
+                                <i class="fas fa-sticky-note fa-4x text-muted mb-3"></i>
+                                <h4 class="text-muted casual-font">No notes yet</h4>
+                                <p class="text-muted body-font">Create your first note for tasks</p>
+                                <a href="{% url 'note-add' %}" class="btn btn-primary mt-3">
+                                    <i class="fas fa-plus"></i> Create First Note
+                                </a>
+                            {% endif %}
                         </div>
                         {% endif %}
                         
@@ -91,5 +176,60 @@
     transform: translateY(-5px);
     box-shadow: 0 8px 25px rgba(17, 138, 178, 0.15);
 }
+
+.form-inline .form-group {
+    display: flex;
+    align-items: center;
+}
+
+/* Highlight search terms in note content */
+.note-card .card-text {
+    line-height: 1.6;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .form-inline .form-group {
+        margin-bottom: 10px;
+        width: 100%;
+    }
+    
+    .form-inline .form-group .input-group {
+        width: 100%;
+    }
+    
+    .form-inline .btn {
+        width: 100%;
+        margin-bottom: 10px;
+    }
+}
 </style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Auto-submit sort dropdown when changed
+    const sortSelect = document.getElementById('sortSelect');
+    if (sortSelect) {
+        sortSelect.addEventListener('change', function() {
+            this.form.submit();
+        });
+    }
+
+    // Highlight search terms in note content
+    function highlightSearchTerms() {
+        const searchQuery = "{{ search_query }}";
+        if (searchQuery) {
+            const noteCards = document.querySelectorAll('.note-card .card-text');
+            noteCards.forEach(card => {
+                const text = card.textContent;
+                const regex = new RegExp(`(${searchQuery})`, 'gi');
+                const highlighted = text.replace(regex, '<mark class="bg-warning">$1</mark>');
+                card.innerHTML = highlighted;
+            });
+        }
+    }
+
+    highlightSearchTerms();
+});
+</script>
 {% endblock %}

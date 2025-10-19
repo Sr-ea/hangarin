@@ -1,7 +1,9 @@
 {% extends 'base.html' %}
 {% load static %}
+{% load widget_tweaks %}
 
 {% block content %}
+{% now "Y-m-d" as today_date %}
 <div class="content">
     <div class="container-fluid">
         <div class="d-flex justify-content-between align-items-center mb-4">
@@ -11,92 +13,245 @@
             </a>
         </div>
 
+        <!-- Search and Filter Section -->
+        <div class="row mb-4">
+            <div class="col-md-12">
+                <div class="card">
+                    <div class="card-body">
+                        <form method="get" class="row g-3 align-items-end">
+                            <!-- Search Input -->
+                            <div class="col-md-3">
+                                <label class="form-label body-font">Search</label>
+                                <input type="text" 
+                                       name="q" 
+                                       class="form-control" 
+                                       placeholder="Search tasks..." 
+                                       value="{{ current_search }}">
+                            </div>
+                            
+                            <!-- Category Filter -->
+                            <div class="col-md-2">
+                                <label class="form-label body-font">Category</label>
+                                <select name="category" class="form-control">
+                                    <option value="">All Categories</option>
+                                    {% for category in categories %}
+                                        <option value="{{ category.id }}" 
+                                                {% if current_category == category.id|stringformat:"i" %}selected{% endif %}>
+                                            {{ category.name }}
+                                        </option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            
+                            <!-- Priority Filter -->
+                            <div class="col-md-2">
+                                <label class="form-label body-font">Priority</label>
+                                <select name="priority" class="form-control">
+                                    <option value="">All Priorities</option>
+                                    {% for priority in priorities %}
+                                        <option value="{{ priority.id }}" 
+                                                {% if current_priority == priority.id|stringformat:"i" %}selected{% endif %}>
+                                            {{ priority.name }}
+                                        </option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            
+                            <!-- Status Filter -->
+                            <div class="col-md-2">
+                                <label class="form-label body-font">Status</label>
+                                <select name="status" class="form-control">
+                                    <option value="">All Status</option>
+                                    {% for value, label in status_choices %}
+                                        <option value="{{ value }}" 
+                                                {% if current_status == value %}selected{% endif %}>
+                                            {{ label }}
+                                        </option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            
+                            <!-- Sort Options -->
+                            <div class="col-md-2">
+                                <label class="form-label body-font">Sort By</label>
+                                <select name="sort" class="form-control">
+                                    <option value="-created_at" {% if current_sort == '-created_at' %}selected{% endif %}>Newest First</option>
+                                    <option value="created_at" {% if current_sort == 'created_at' %}selected{% endif %}>Oldest First</option>
+                                    <option value="title" {% if current_sort == 'title' %}selected{% endif %}>Title A-Z</option>
+                                    <option value="-title" {% if current_sort == '-title' %}selected{% endif %}>Title Z-A</option>
+                                    <option value="deadline" {% if current_sort == 'deadline' %}selected{% endif %}>Deadline (Soonest)</option>
+                                    <option value="-deadline" {% if current_sort == '-deadline' %}selected{% endif %}>Deadline (Latest)</option>
+                                </select>
+                            </div>
+                            
+                            <!-- Action Buttons -->
+                            <div class="col-md-1">
+                                <button type="submit" class="btn btn-primary w-100">
+                                    <i class="fas fa-search"></i>
+                                </button>
+                            </div>
+                            
+                            <!-- Clear Filters -->
+                            <div class="col-md-1">
+                                <a href="{% url 'task-list' %}" class="btn btn-outline-secondary w-100">
+                                    <i class="fas fa-times"></i>
+                                </a>
+                            </div>
+                        </form>
+                        
+                        <!-- Active Filters Display -->
+                        {% if current_search or current_category or current_priority or current_status %}
+                        <div class="mt-3">
+                            <small class="text-muted body-font">
+                                <strong>Active Filters:</strong>
+                                {% if current_search %}Search: "{{ current_search }}"{% endif %}
+                                {% if current_category %}| Category: 
+                                    {% for category in categories %}
+                                        {% if current_category == category.id|stringformat:"i" %}
+                                            {{ category.name }}
+                                        {% endif %}
+                                    {% endfor %}
+                                {% endif %}
+                                {% if current_priority %}| Priority: 
+                                    {% for priority in priorities %}
+                                        {% if current_priority == priority.id|stringformat:"i" %}
+                                            {{ priority.name }}
+                                        {% endif %}
+                                    {% endfor %}
+                                {% endif %}
+                                {% if current_status %}| Status: {{ current_status }}{% endif %}
+                            </small>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <div class="row">
             <div class="col-md-12">
                 <div class="card">
                     <div class="card-header">
-                        <div class="card-title">All Tasks</div>
-                        <div class="card-category">Manage your tasks with priority colors</div>
+                        <div class="card-title">
+                            {% if current_search or current_category or current_priority or current_status %}
+                                Filtered Tasks
+                            {% else %}
+                                All Tasks
+                            {% endif %}
+                        </div>
+                        <div class="card-category">
+                            {% if tasks %}
+                                Showing {{ tasks|length }} task{{ tasks|length|pluralize }}
+                                {% if current_search or current_category or current_priority or current_status %}
+                                    (filtered)
+                                {% endif %}
+                            {% else %}
+                                No tasks found
+                                {% if current_search or current_category or current_priority or current_status %}
+                                    with the current filters
+                                {% endif %}
+                            {% endif %}
+                        </div>
                     </div>
                     <div class="card-body">
                         {% if tasks %}
                         <div class="table-responsive">
-                            <table class="table table-striped mt-3">
+                            <table class="table mt-3 task-list-table">
                                 <thead>
                                     <tr>
-                                        <th>Title</th>
-                                        <th>Status</th>
-                                        <th>Deadline</th>
-                                        <th>Priority</th>
-                                        <th>Category</th>
-                                        <th>Actions</th>
+                                        <th class="task-title">Title</th>
+                                        <th class="task-status">Status</th>
+                                        <th class="task-deadline">Deadline</th>
+                                        <th class="task-priority">Priority</th>
+                                        <th class="task-category">Category</th>
+                                        <th class="task-actions">Actions</th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                     {% for task in tasks %}
                                     <tr>
-                                        <td>
+                                        <td class="task-title" data-label="Title">
                                             <strong class="body-font">{{ task.title }}</strong>
                                             {% if task.description %}
                                             <br><small class="text-muted body-font">{{ task.description|truncatewords:10 }}</small>
                                             {% endif %}
                                         </td>
-                                        <td>
+                                        <td class="task-status" data-label="Status">
                                             <span class="badge badge-{% if task.status == 'Completed' %}success{% elif task.status == 'In Progress' %}warning{% else %}secondary{% endif %}">
                                                 {{ task.status }}
                                             </span>
                                         </td>
-                                        <td class="body-font">
+                                        <td class="task-deadline body-font" data-label="Deadline">
                                             {% if task.deadline %}
                                                 {{ task.deadline|date:"M d, Y" }}
+                                                {% if task.deadline|date:"Y-m-d" < today_date %}
+                                                    <br><small class="text-danger">Overdue</small>
+                                                {% endif %}
                                             {% else %}
                                                 <span class="text-muted">No deadline</span>
                                             {% endif %}
                                         </td>
-                                        <td>
-                                            <!-- Updated Priority Display with Custom Colors -->
+                                        <td class="task-priority" data-label="Priority">
                                             <span class="badge" 
                                                   style="background-color: {{ task.priority.color }}; 
                                                          color: white;
                                                          padding: 6px 12px;
                                                          border-radius: 15px;
                                                          font-weight: 600;">
-                                                {{ task.priority }}
+                                                {{ task.priority.name }}
                                             </span>
                                         </td>
-                                        <td class="body-font">
-                                            {{ task.category }}
+                                        <td class="task-category body-font" data-label="Category">
+                                            {% if task.category %}
+                                                {{ task.category.name }}
+                                            {% else %}
+                                                <span class="text-muted">Uncategorized</span>
+                                            {% endif %}
                                         </td>
-                                        <td>
-                                            <a href="{% url 'task-update' task.id %}" class="btn btn-sm btn-outline-primary">
-                                                <i class="fas fa-edit"></i> Edit
-                                            </a>
-                                            <a href="{% url 'task-delete' task.id %}" class="btn btn-sm btn-outline-danger">
-                                                <i class="fas fa-trash"></i> Delete
-                                            </a>
+                                        <td class="task-actions" data-label="Actions">
+                                            <div class="btn-group btn-group-sm" role="group">
+                                                <a href="{% url 'task-detail' task.id %}" class="btn btn-outline-info" title="View Task">
+                                                    <i class="fas fa-eye"></i>
+                                                </a>
+                                                <a href="{% url 'task-update' task.id %}" class="btn btn-outline-primary" title="Edit Task">
+                                                    <i class="fas fa-edit"></i>
+                                                </a>
+                                                <a href="{% url 'task-delete' task.id %}" class="btn btn-outline-danger" title="Delete Task">
+                                                    <i class="fas fa-trash"></i>
+                                                </a>
+                                            </div>
                                         </td>
-                                    </tr>
-                                    {% empty %}
-                                    <tr>
-                                        <td colspan="6" class="text-center">No tasks found.</td>
                                     </tr>
                                     {% endfor %}
                                 </tbody>
                             </table>
                         </div>
+                        
+                        <!-- Pagination -->
+                        {% if is_paginated %}
+                            {% include 'includes/pagination.html' %}
+                        {% endif %}
+                        
                         {% else %}
                         <div class="text-center py-5">
                             <i class="fas fa-tasks fa-4x text-muted mb-3"></i>
-                            <h4 class="text-muted casual-font">No tasks yet</h4>
-                            <p class="text-muted body-font">Get started by creating your first task!</p>
+                            <h4 class="text-muted casual-font">No tasks found</h4>
+                            <p class="text-muted body-font">
+                                {% if current_search or current_category or current_priority or current_status %}
+                                    No tasks match your current filters. Try adjusting your search criteria.
+                                {% else %}
+                                    Get started by creating your first task!
+                                {% endif %}
+                            </p>
                             <a href="{% url 'task-add' %}" class="btn btn-primary mt-3">
                                 <i class="fas fa-plus"></i> Create Your First Task
                             </a>
+                            {% if current_search or current_category or current_priority or current_status %}
+                                <a href="{% url 'task-list' %}" class="btn btn-outline-secondary mt-3">
+                                    <i class="fas fa-times"></i> Clear Filters
+                                </a>
+                            {% endif %}
                         </div>
-                        {% endif %}
-                        
-                        {% if is_paginated %}
-                            {% include 'includes/pagination.html' %}
                         {% endif %}
                     </div>
                 </div>
@@ -104,4 +259,535 @@
         </div>
     </div>
 </div>
+
+<style>
+/* Task List Table Responsive Styles */
+.task-list-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.task-list-table th {
+    white-space: nowrap;
+    padding: 12px 8px;
+    font-weight: 600;
+    color: var(--ocean-blue);
+}
+
+.task-list-table td {
+    padding: 12px 8px;
+    vertical-align: middle;
+    transition: all 0.3s ease;
+}
+
+/* Status Badge Colors for Task List */
+.task-list-table .badge-secondary { /* Pending */
+    background-color: #6c757d !important; /* Grey background */
+    color: white !important; /* White text for contrast */
+    border: 1px solid #5a6268;
+}
+
+.task-list-table .badge-warning { /* In Progress */
+    background-color: #fd7e14 !important; /* Orange background */
+    color: white !important; /* White text for contrast */
+    border: 1px solid #e06b10;
+}
+
+.task-list-table .badge-success { /* Completed */
+    background-color: #198754 !important; /* Green background */
+    color: white !important; /* White text for contrast */
+    border: 1px solid #157347;
+}
+
+/* Ensure consistent badge styling */
+.task-list-table .badge {
+    font-weight: 600;
+    padding: 6px 10px;
+    border-radius: 12px;
+    font-size: 0.8rem;
+}
+
+/* Priority badges should keep their colors with white text */
+.task-list-table .badge[style*="background-color"] {
+    color: white !important; /* Keep priority badges with white text */
+}
+
+/* Category badges */
+.task-list-table .badge-light {
+    background-color: #F8F9FA !important;
+    color: #073B4C !important;
+    border: 1px solid #DEE2E6;
+}
+
+/* Column-specific widths for better compression */
+.task-list-table .task-title {
+    min-width: 100px;
+    max-width: 140px;
+}
+
+.task-list-table .task-status {
+    min-width: 100px;
+    max-width: 120px;
+}
+
+.task-list-table .task-deadline {
+    min-width: 120px;
+    max-width: 140px;
+    white-space: nowrap;
+}
+
+.task-list-table .task-priority {
+    min-width: 100px;
+    max-width: 120px;
+}
+
+.task-list-table .task-category {
+    min-width: 120px;
+    max-width: 150px;
+}
+
+.task-list-table .task-actions {
+    min-width: 140px;
+    max-width: 160px;
+    white-space: nowrap;
+}
+
+/* Responsive behavior for smaller screens */
+@media (max-width: 1200px) {
+    .task-list-table .task-title {
+        min-width: 100px;
+        max-width: 240px;
+    }
+    
+    .task-list-table td {
+        padding: 10px 6px;
+    }
+}
+
+@media (max-width: 992px) {
+    .task-list-table .task-title {
+        min-width: 150px;
+        max-width: 200px;
+    }
+    
+    .task-list-table .task-category {
+        min-width: 100px;
+        max-width: 130px;
+    }
+    
+    .task-list-table .task-actions {
+        min-width: 120px;
+        max-width: 140px;
+    }
+}
+
+/* Mobile-specific styles */
+@media (max-width: 767.98px) {
+    /* Override Bootstrap table-responsive behavior */
+    .table-responsive {
+        overflow-x: visible;
+        border: none;
+    }
+    
+    /* Stack table on mobile */
+    .task-list-table,
+    .task-list-table thead,
+    .task-list-table tbody,
+    .task-list-table th,
+    .task-list-table td,
+    .task-list-table tr {
+        display: block;
+    }
+    
+    .task-list-table thead tr {
+        display: none;
+    }
+    
+    .task-list-table tr {
+        display: block;
+        margin-bottom: 15px;
+        border: 1px solid #dee2e6;
+        border-radius: 8px;
+        padding: 15px;
+        background: rgba(255, 255, 255, 0.95);
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    
+    .task-list-table td {
+        display: block;
+        padding: 8px 10px;
+        border: none;
+        position: relative;
+        padding-left: 45%;
+        text-align: left;
+        border-bottom: 1px solid #f8f9fa;
+    }
+    
+    .task-list-table td:last-child {
+        border-bottom: none;
+    }
+    
+    .task-list-table td:before {
+        content: attr(data-label);
+        position: absolute;
+        left: 10px;
+        width: 40%;
+        padding-right: 10px;
+        white-space: nowrap;
+        font-weight: 600;
+        color: var(--ocean-blue);
+        font-size: 0.85rem;
+    }
+    
+    .task-list-table .task-actions {
+        padding-left: 10px !important;
+        text-align: center;
+        margin-top: 10px;
+        border-top: 1px solid #eee;
+        padding-top: 15px !important;
+    }
+    
+    .task-list-table .task-actions:before {
+        display: none;
+    }
+    
+    .task-list-table .btn-group {
+        justify-content: center;
+        display: flex;
+    }
+    
+    /* Adjust badge sizes for mobile */
+    .task-list-table .badge {
+        padding: 4px 8px;
+        font-size: 0.75rem;
+    }
+    
+    /* Ensure text is readable */
+    .task-list-table .body-font {
+        font-size: 0.9rem;
+    }
+    
+    .task-list-table .text-muted {
+        font-size: 0.8rem;
+    }
+}
+
+@media (max-width: 575.98px) {
+    .task-list-table td {
+        padding-left: 40%;
+    }
+    
+    .task-list-table td:before {
+        width: 35%;
+        font-size: 0.8rem;
+    }
+    
+    .card-body {
+        padding: 10px;
+    }
+    
+    .task-list-table tr {
+        padding: 10px;
+        margin-bottom: 10px;
+    }
+}
+
+/* Hover effects for larger screens */
+@media (min-width: 768px) {
+    .task-list-table tbody tr:hover {
+        background-color: rgba(255, 209, 102, 0.1);
+        transform: translateY(-1px);
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+}
+
+/* Text truncation for long content */
+.task-list-table .task-title {
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* Button group styling */
+.task-list-table .btn-group-sm .btn {
+    padding: 0.25rem 0.5rem;
+    font-size: 0.75rem;
+}
+
+.task-list-table .btn-group .btn {
+    border-radius: 0.25rem;
+    margin: 0 2px;
+}
+
+/* Ensure the table header buttons are properly aligned */
+.d-flex.justify-content-between.align-items-center.mb-4 {
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+@media (max-width: 576px) {
+    .d-flex.justify-content-between.align-items-center.mb-4 {
+        flex-direction: column;
+        align-items: flex-start !important;
+    }
+    
+    .d-flex.justify-content-between.align-items-center.mb-4 .btn {
+        margin-top: 10px;
+        align-self: flex-end;
+    }
+}
+
+.task-list-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.task-list-table th {
+    white-space: nowrap;
+    padding: 12px 8px;
+    font-weight: 600;
+    color: var(--ocean-blue);
+}
+
+.task-list-table td {
+    padding: 12px 8px;
+    vertical-align: middle;
+    transition: all 0.3s ease;
+}
+
+/* Status Badge Colors */
+.task-list-table .badge-secondary {
+    background-color: #6c757d !important;
+    color: white !important;
+    border: 1px solid #5a6268;
+}
+
+.task-list-table .badge-warning {
+    background-color: #fd7e14 !important;
+    color: white !important;
+    border: 1px solid #e06b10;
+}
+
+.task-list-table .badge-success {
+    background-color: #198754 !important;
+    color: white !important;
+    border: 1px solid #157347;
+}
+
+.task-list-table .badge {
+    font-weight: 600;
+    padding: 6px 10px;
+    border-radius: 12px;
+    font-size: 0.8rem;
+}
+
+/* Mobile Responsive Styles */
+@media (max-width: 767.98px) {
+    .table-responsive {
+        overflow-x: visible;
+        border: none;
+    }
+    
+    .task-list-table,
+    .task-list-table thead,
+    .task-list-table tbody,
+    .task-list-table th,
+    .task-list-table td,
+    .task-list-table tr {
+        display: block;
+    }
+    
+    .task-list-table thead tr {
+        display: none;
+    }
+    
+    .task-list-table tr {
+        display: block;
+        margin-bottom: 15px;
+        border: 1px solid #dee2e6;
+        border-radius: 8px;
+        padding: 15px;
+        background: rgba(255, 255, 255, 0.95);
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    
+    .task-list-table td {
+        display: block;
+        padding: 8px 10px;
+        border: none;
+        position: relative;
+        padding-left: 45%;
+        text-align: left;
+        border-bottom: 1px solid #f8f9fa;
+    }
+    
+    .task-list-table td:last-child {
+        border-bottom: none;
+    }
+    
+    .task-list-table td:before {
+        content: attr(data-label);
+        position: absolute;
+        left: 10px;
+        width: 40%;
+        padding-right: 10px;
+        white-space: nowrap;
+        font-weight: 600;
+        color: var(--ocean-blue);
+        font-size: 0.85rem;
+    }
+    
+    .task-list-table .task-actions {
+        padding-left: 10px !important;
+        text-align: center;
+        margin-top: 10px;
+        border-top: 1px solid #eee;
+        padding-top: 15px !important;
+    }
+    
+    .task-list-table .task-actions:before {
+        display: none;
+    }
+    
+    .task-list-table .btn-group {
+        justify-content: center;
+        display: flex;
+    }
+}
+
+/* Hover effects for larger screens */
+@media (min-width: 768px) {
+    .task-list-table tbody tr:hover {
+        background-color: rgba(255, 209, 102, 0.1);
+        transform: translateY(-1px);
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+}
+
+.task-list-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.task-list-table th {
+    white-space: nowrap;
+    padding: 12px 8px;
+    font-weight: 600;
+    color: var(--ocean-blue);
+}
+
+.task-list-table td {
+    padding: 12px 8px;
+    vertical-align: middle;
+    transition: all 0.3s ease;
+}
+
+/* Status Badge Colors */
+.task-list-table .badge-secondary {
+    background-color: #6c757d !important;
+    color: white !important;
+    border: 1px solid #5a6268;
+}
+
+.task-list-table .badge-warning {
+    background-color: #fd7e14 !important;
+    color: white !important;
+    border: 1px solid #e06b10;
+}
+
+.task-list-table .badge-success {
+    background-color: #198754 !important;
+    color: white !important;
+    border: 1px solid #157347;
+}
+
+.task-list-table .badge {
+    font-weight: 600;
+    padding: 6px 10px;
+    border-radius: 12px;
+    font-size: 0.8rem;
+}
+
+/* Mobile Responsive Styles */
+@media (max-width: 767.98px) {
+    .table-responsive {
+        overflow-x: visible;
+        border: none;
+    }
+    
+    .task-list-table,
+    .task-list-table thead,
+    .task-list-table tbody,
+    .task-list-table th,
+    .task-list-table td,
+    .task-list-table tr {
+        display: block;
+    }
+    
+    .task-list-table thead tr {
+        display: none;
+    }
+    
+    .task-list-table tr {
+        display: block;
+        margin-bottom: 15px;
+        border: 1px solid #dee2e6;
+        border-radius: 8px;
+        padding: 15px;
+        background: rgba(255, 255, 255, 0.95);
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    
+    .task-list-table td {
+        display: block;
+        padding: 8px 10px;
+        border: none;
+        position: relative;
+        padding-left: 45%;
+        text-align: left;
+        border-bottom: 1px solid #f8f9fa;
+    }
+    
+    .task-list-table td:last-child {
+        border-bottom: none;
+    }
+    
+    .task-list-table td:before {
+        content: attr(data-label);
+        position: absolute;
+        left: 10px;
+        width: 40%;
+        padding-right: 10px;
+        white-space: nowrap;
+        font-weight: 600;
+        color: var(--ocean-blue);
+        font-size: 0.85rem;
+    }
+    
+    .task-list-table .task-actions {
+        padding-left: 10px !important;
+        text-align: center;
+        margin-top: 10px;
+        border-top: 1px solid #eee;
+        padding-top: 15px !important;
+    }
+    
+    .task-list-table .task-actions:before {
+        display: none;
+    }
+    
+    .task-list-table .btn-group {
+        justify-content: center;
+        display: flex;
+    }
+}
+
+/* Hover effects for larger screens */
+@media (min-width: 768px) {
+    .task-list-table tbody tr:hover {
+        background-color: rgba(255, 209, 102, 0.1);
+        transform: translateY(-1px);
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+}
+</style>
 {% endblock %}

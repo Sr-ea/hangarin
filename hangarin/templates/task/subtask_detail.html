@@ -1,0 +1,42 @@
+<!-- subtask_detail.html -->
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="content">
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-md-8">
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-title">Subtask Details</div>
+                    </div>
+                    <div class="card-body">
+                        <h4>{{ subtask.title }}</h4>
+                        <p><strong>Status:</strong> 
+                            <span class="badge badge-{% if subtask.status == 'Completed' %}success{% elif subtask.status == 'In Progress' %}warning{% else %}secondary{% endif %}">
+                                {{ subtask.status }}
+                            </span>
+                        </p>
+                        <p><strong>Parent Task:</strong> {{ subtask.task.title }}</p>
+                        <p><strong>Deadline:</strong> 
+                            {% if subtask.deadline %}
+                                {{ subtask.deadline|date:"M d, Y" }}
+                            {% else %}
+                                No deadline
+                            {% endif %}
+                        </p>
+                        {% if subtask.description %}
+                        <p><strong>Description:</strong></p>
+                        <p>{{ subtask.description }}</p>
+                        {% endif %}
+                        <div class="mt-4">
+                            <a href="{% url 'subtask-update' subtask.id %}" class="btn btn-primary">Edit Subtask</a>
+                            <a href="{% url 'subtask-list' %}" class="btn btn-secondary">Back to List</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,5 +1,6 @@
 {% extends 'base.html' %}
 {% load static %}
+{% load widget_tweaks %}
 
 {% block content %}
 <div class="content">
@@ -11,69 +12,187 @@
             </a>
         </div>
 
+        <!-- Search and Filter Section -->
+        <div class="row mb-4">
+            <div class="col-md-12">
+                <div class="card">
+                    <div class="card-body">
+                        <form method="get" class="row g-3 align-items-end">
+                            <!-- Search Input -->
+                            <div class="col-md-4">
+                                <label class="form-label body-font">Search</label>
+                                <input type="text" 
+                                       name="q" 
+                                       class="form-control" 
+                                       placeholder="Search subtasks..." 
+                                       value="{{ search_query }}">
+                            </div>
+                            
+                            <!-- Status Filter -->
+                            <div class="col-md-3">
+                                <label class="form-label body-font">Status</label>
+                                <select name="status" class="form-control">
+                                    <option value="">All Status</option>
+                                    {% for value, label in status_choices %}
+                                        <option value="{{ value }}" 
+                                                {% if current_status == value %}selected{% endif %}>
+                                            {{ label }}
+                                        </option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            
+                            <!-- Sort Options -->
+                            <div class="col-md-3">
+                                <label class="form-label body-font">Sort By</label>
+                                <select name="sort" class="form-control">
+                                    <option value="-created_at" {% if current_sort == '-created_at' %}selected{% endif %}>Newest First</option>
+                                    <option value="created_at" {% if current_sort == 'created_at' %}selected{% endif %}>Oldest First</option>
+                                    <option value="title" {% if current_sort == 'title' %}selected{% endif %}>Title A-Z</option>
+                                    <option value="-title" {% if current_sort == '-title' %}selected{% endif %}>Title Z-A</option>
+                                    <option value="status" {% if current_sort == 'status' %}selected{% endif %}>Status</option>
+                                    <option value="deadline" {% if current_sort == 'deadline' %}selected{% endif %}>Deadline (Soonest)</option>
+                                    <option value="-deadline" {% if current_sort == '-deadline' %}selected{% endif %}>Deadline (Latest)</option>
+                                    <option value="task__title" {% if current_sort == 'task__title' %}selected{% endif %}>Parent Task A-Z</option>
+                                </select>
+                            </div>
+                            
+                            <!-- Action Buttons -->
+                            <div class="col-md-1">
+                                <button type="submit" class="btn btn-primary w-100">
+                                    <i class="fas fa-search"></i>
+                                </button>
+                            </div>
+                            
+                            <!-- Clear Filters -->
+                            <div class="col-md-1">
+                                <a href="{% url 'subtask-list' %}" class="btn btn-outline-secondary w-100">
+                                    <i class="fas fa-times"></i>
+                                </a>
+                            </div>
+                        </form>
+                        
+                        <!-- Active Filters Display -->
+                        {% if search_query or current_status %}
+                        <div class="mt-3">
+                            <small class="text-muted body-font">
+                                <strong>Active Filters:</strong>
+                                {% if search_query %}Search: "{{ search_query }}"{% endif %}
+                                {% if current_status %}| Status: {{ current_status }}{% endif %}
+                            </small>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <div class="row">
             <div class="col-md-12">
                 <div class="card">
                     <div class="card-header">
-                        <div class="card-title">All Subtasks</div>
-                        <div class="card-category">Manage your task subtasks</div>
+                        <div class="card-title">
+                            {% if search_query or current_status %}
+                                Filtered Subtasks
+                            {% else %}
+                                All Subtasks
+                            {% endif %}
+                        </div>
+                        <div class="card-category">
+                            {% if subtasks %}
+                                Showing {{ subtasks|length }} subtask{{ subtasks|length|pluralize }}
+                                {% if search_query or current_status %}
+                                    (filtered)
+                                {% endif %}
+                            {% else %}
+                                No subtasks found
+                                {% if search_query or current_status %}
+                                    with the current filters
+                                {% endif %}
+                            {% endif %}
+                        </div>
                     </div>
                     <div class="card-body">
                         {% if subtasks %}
                         <div class="table-responsive">
-                            <table class="table table-striped mt-3">
+                            <table class="table mt-3 subtask-list-table">
                                 <thead>
                                     <tr>
-                                        <th>Title</th>
-                                        <th>Parent Task</th>
-                                        <th>Status</th>
-                                        <th>Created At</th>
-                                        <th>Actions</th>
+                                        <th class="subtask-title">Title</th>
+                                        <th class="subtask-status">Status</th>
+                                        <th class="subtask-parent">Parent Task</th>
+                                        <th class="subtask-deadline">Deadline</th>
+                                        <th class="subtask-actions">Actions</th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                     {% for subtask in subtasks %}
                                     <tr>
-                                        <td>
+                                        <td class="subtask-title" data-label="Title">
                                             <strong class="body-font">{{ subtask.title }}</strong>
+                                            {% if subtask.description %}
+                                            <br><small class="text-muted body-font">{{ subtask.description|truncatewords:10 }}</small>
+                                            {% endif %}
                                         </td>
-                                        <td class="body-font">
-                                            {{ subtask.task.title }}
-                                        </td>
-                                        <td>
+                                        <td class="subtask-status" data-label="Status">
                                             <span class="badge badge-{% if subtask.status == 'Completed' %}success{% elif subtask.status == 'In Progress' %}warning{% else %}secondary{% endif %}">
                                                 {{ subtask.status }}
                                             </span>
                                         </td>
-                                        <td class="body-font">
-                                            {{ subtask.created_at|date:"M d, Y" }}
+                                        <td class="subtask-parent body-font" data-label="Parent Task">
+                                            {{ subtask.task.title }}
                                         </td>
-                                        <td>
-                                            <a href="{% url 'subtask-update' subtask.id %}" class="btn btn-sm btn-outline-primary">
-                                                <i class="fas fa-edit"></i> Edit
-                                            </a>
-                                            <a href="{% url 'subtask-delete' subtask.id %}" class="btn btn-sm btn-outline-danger">
-                                                <i class="fas fa-trash"></i> Delete
-                                            </a>
+                                        <td class="subtask-deadline body-font" data-label="Deadline">
+                                            {% if subtask.deadline %}
+                                                {{ subtask.deadline|date:"M d, Y" }}
+                                                {% if subtask.deadline|date:"Y-m-d" < today|date:"Y-m-d" %}
+                                                    <br><small class="text-danger">Overdue</small>
+                                                {% endif %}
+                                            {% else %}
+                                                <span class="text-muted">No deadline</span>
+                                            {% endif %}
+                                        </td>
+                                        <td class="subtask-actions" data-label="Actions">
+                                            <div class="btn-group btn-group-sm" role="group">
+                                                <a href="{% url 'subtask-update' subtask.id %}" class="btn btn-outline-primary" title="Edit Subtask">
+                                                    <i class="fas fa-edit"></i>
+                                                </a>
+                                                <a href="{% url 'subtask-delete' subtask.id %}" class="btn btn-outline-danger" title="Delete Subtask">
+                                                    <i class="fas fa-trash"></i>
+                                                </a>
+                                            </div>
                                         </td>
                                     </tr>
                                     {% endfor %}
                                 </tbody>
                             </table>
                         </div>
+                        
+                        <!-- Pagination -->
+                        {% if is_paginated %}
+                            {% include 'includes/pagination.html' %}
+                        {% endif %}
+                        
                         {% else %}
                         <div class="text-center py-5">
                             <i class="fas fa-check-square fa-4x text-muted mb-3"></i>
-                            <h4 class="text-muted casual-font">No subtasks yet</h4>
-                            <p class="text-muted body-font">Break down tasks into smaller subtasks</p>
+                            <h4 class="text-muted casual-font">No subtasks found</h4>
+                            <p class="text-muted body-font">
+                                {% if search_query or current_status %}
+                                    No subtasks match your current filters. Try adjusting your search criteria.
+                                {% else %}
+                                    Get started by creating your first subtask!
+                                {% endif %}
+                            </p>
                             <a href="{% url 'subtask-add' %}" class="btn btn-primary mt-3">
-                                <i class="fas fa-plus"></i> Create First Subtask
+                                <i class="fas fa-plus"></i> Create Your First Subtask
                             </a>
+                            {% if search_query or current_status %}
+                                <a href="{% url 'subtask-list' %}" class="btn btn-outline-secondary mt-3">
+                                    <i class="fas fa-times"></i> Clear Filters
+                                </a>
+                            {% endif %}
                         </div>
-                        {% endif %}
-                        
-                        {% if is_paginated %}
-                            {% include 'includes/pagination.html' %}
                         {% endif %}
                     </div>
                 </div>
@@ -81,4 +200,274 @@
         </div>
     </div>
 </div>
+
+<style>
+/* Subtask List Table Responsive Styles */
+.subtask-list-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.subtask-list-table th {
+    white-space: nowrap;
+    padding: 12px 8px;
+    font-weight: 600;
+    color: var(--ocean-blue);
+}
+
+.subtask-list-table td {
+    padding: 12px 8px;
+    vertical-align: middle;
+    transition: all 0.3s ease;
+}
+
+/* Status Badge Colors for Subtask List */
+.subtask-list-table .badge-secondary { /* Pending */
+    background-color: #6c757d !important;
+    color: white !important;
+    border: 1px solid #5a6268;
+}
+
+.subtask-list-table .badge-warning { /* In Progress */
+    background-color: #fd7e14 !important;
+    color: white !important;
+    border: 1px solid #e06b10;
+}
+
+.subtask-list-table .badge-success { /* Completed */
+    background-color: #198754 !important;
+    color: white !important;
+    border: 1px solid #157347;
+}
+
+/* Ensure consistent badge styling */
+.subtask-list-table .badge {
+    font-weight: 600;
+    padding: 6px 10px;
+    border-radius: 12px;
+    font-size: 0.8rem;
+}
+
+/* Column-specific widths for better compression */
+.subtask-list-table .subtask-title {
+    min-width: 200px;
+    max-width: 300px;
+}
+
+.subtask-list-table .subtask-status {
+    min-width: 100px;
+    max-width: 120px;
+}
+
+.subtask-list-table .subtask-parent {
+    min-width: 150px;
+    max-width: 200px;
+}
+
+.subtask-list-table .subtask-deadline {
+    min-width: 120px;
+    max-width: 140px;
+    white-space: nowrap;
+}
+
+.subtask-list-table .subtask-actions {
+    min-width: 140px;
+    max-width: 160px;
+    white-space: nowrap;
+}
+
+/* Responsive behavior for smaller screens */
+@media (max-width: 1200px) {
+    .subtask-list-table .subtask-title {
+        min-width: 180px;
+        max-width: 250px;
+    }
+    
+    .subtask-list-table .subtask-parent {
+        min-width: 130px;
+        max-width: 180px;
+    }
+    
+    .subtask-list-table td {
+        padding: 10px 6px;
+    }
+}
+
+@media (max-width: 992px) {
+    .subtask-list-table .subtask-title {
+        min-width: 150px;
+        max-width: 200px;
+    }
+    
+    .subtask-list-table .subtask-parent {
+        min-width: 120px;
+        max-width: 150px;
+    }
+    
+    .subtask-list-table .subtask-actions {
+        min-width: 120px;
+        max-width: 140px;
+    }
+}
+
+/* Mobile-specific styles */
+@media (max-width: 767.98px) {
+    /* Override Bootstrap table-responsive behavior */
+    .table-responsive {
+        overflow-x: visible;
+        border: none;
+    }
+    
+    /* Stack table on mobile */
+    .subtask-list-table,
+    .subtask-list-table thead,
+    .subtask-list-table tbody,
+    .subtask-list-table th,
+    .subtask-list-table td,
+    .subtask-list-table tr {
+        display: block;
+    }
+    
+    .subtask-list-table thead tr {
+        display: none;
+    }
+    
+    .subtask-list-table tr {
+        display: block;
+        margin-bottom: 15px;
+        border: 1px solid #dee2e6;
+        border-radius: 8px;
+        padding: 15px;
+        background: rgba(255, 255, 255, 0.95);
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    
+    .subtask-list-table td {
+        display: block;
+        padding: 8px 10px;
+        border: none;
+        position: relative;
+        padding-left: 45%;
+        text-align: left;
+        border-bottom: 1px solid #f8f9fa;
+    }
+    
+    .subtask-list-table td:last-child {
+        border-bottom: none;
+    }
+    
+    .subtask-list-table td:before {
+        content: attr(data-label);
+        position: absolute;
+        left: 10px;
+        width: 40%;
+        padding-right: 10px;
+        white-space: nowrap;
+        font-weight: 600;
+        color: var(--ocean-blue);
+        font-size: 0.85rem;
+    }
+    
+    .subtask-list-table .subtask-actions {
+        padding-left: 10px !important;
+        text-align: center;
+        margin-top: 10px;
+        border-top: 1px solid #eee;
+        padding-top: 15px !important;
+    }
+    
+    .subtask-list-table .subtask-actions:before {
+        display: none;
+    }
+    
+    .subtask-list-table .btn-group {
+        justify-content: center;
+        display: flex;
+    }
+    
+    /* Adjust badge sizes for mobile */
+    .subtask-list-table .badge {
+        padding: 4px 8px;
+        font-size: 0.75rem;
+    }
+    
+    /* Ensure text is readable */
+    .subtask-list-table .body-font {
+        font-size: 0.9rem;
+    }
+    
+    .subtask-list-table .text-muted {
+        font-size: 0.8rem;
+    }
+}
+
+@media (max-width: 575.98px) {
+    .subtask-list-table td {
+        padding-left: 40%;
+    }
+    
+    .subtask-list-table td:before {
+        width: 35%;
+        font-size: 0.8rem;
+    }
+    
+    .card-body {
+        padding: 10px;
+    }
+    
+    .subtask-list-table tr {
+        padding: 10px;
+        margin-bottom: 10px;
+    }
+}
+
+/* Hover effects for larger screens */
+@media (min-width: 768px) {
+    .subtask-list-table tbody tr:hover {
+        background-color: rgba(255, 209, 102, 0.1);
+        transform: translateY(-1px);
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+}
+
+/* Text truncation for long content */
+.subtask-list-table .subtask-title {
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.subtask-list-table .subtask-parent {
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* Button group styling */
+.subtask-list-table .btn-group-sm .btn {
+    padding: 0.25rem 0.5rem;
+    font-size: 0.75rem;
+}
+
+.subtask-list-table .btn-group .btn {
+    border-radius: 0.25rem;
+    margin: 0 2px;
+}
+
+/* Ensure the table header buttons are properly aligned */
+.d-flex.justify-content-between.align-items-center.mb-4 {
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+@media (max-width: 576px) {
+    .d-flex.justify-content-between.align-items-center.mb-4 {
+        flex-direction: column;
+        align-items: flex-start !important;
+    }
+    
+    .d-flex.justify-content-between.align-items-center.mb-4 .btn {
+        margin-top: 10px;
+        align-self: flex-end;
+    }
+}
+</style>
 {% endblock %}

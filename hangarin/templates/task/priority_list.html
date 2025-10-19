@@ -11,12 +11,67 @@
             </a>
         </div>
 
+        <!-- Search and Filter Card -->
+        <div class="row">
+            <div class="col-md-12">
+                <div class="card">
+                    <div class="card-body">
+                        <form method="get" class="form-inline">
+                            <!-- Search Input -->
+                            <div class="form-group mr-3 mb-2">
+                                <label for="searchInput" class="sr-only">Search</label>
+                                <div class="input-group">
+                                    <div class="input-group-prepend">
+                                        <span class="input-group-text"><i class="fas fa-search"></i></span>
+                                    </div>
+                                    <input type="text" 
+                                           class="form-control" 
+                                           id="searchInput" 
+                                           name="q" 
+                                           placeholder="Search by name or description..." 
+                                           value="{{ search_query }}">
+                                </div>
+                            </div>
+
+                            <!-- Sort Dropdown -->
+                            <div class="form-group mr-3 mb-2">
+                                <label for="sortSelect" class="sr-only">Sort By</label>
+                                <select class="form-control" id="sortSelect" name="sort_by">
+                                    {% for option in sort_options %}
+                                        <option value="{{ option.value }}" 
+                                                {% if current_sort == option.value %}selected{% endif %}>
+                                            {{ option.label }}
+                                        </option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+
+                            <!-- Buttons -->
+                            <button type="submit" class="btn btn-primary mb-2 mr-2">
+                                <i class="fas fa-search"></i>
+                            </button>
+                            <a href="{% url 'priority-list' %}" class="btn btn-outline-secondary mb-2">
+                                <i class="fas fa-times"></i>
+                            </a>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Priorities List -->
         <div class="row">
             <div class="col-md-12">
                 <div class="card">
                     <div class="card-header">
                         <div class="card-title">Task Priorities</div>
-                        <div class="card-category">Manage task priority levels and colors</div>
+                        <div class="card-category">
+                            {% if priorities %}
+                                Showing {{ priorities|length }} of {{ total_priorities }} priority level{{ total_priorities|pluralize }}
+                            {% else %}
+                                No priorities found
+                            {% endif %}
+                        </div>
                     </div>
                     <div class="card-body">
                         {% if priorities %}
@@ -24,10 +79,24 @@
                             <table class="table table-striped mt-3">
                                 <thead>
                                     <tr>
-                                        <th>Name</th>
+                                        <th>
+                                            Name 
+                                            {% if current_sort == 'name' %}
+                                                <i class="fas fa-sort-alpha-down text-primary"></i>
+                                            {% elif current_sort == '-name' %}
+                                                <i class="fas fa-sort-alpha-up text-primary"></i>
+                                            {% endif %}
+                                        </th>
                                         <th>Color</th>
                                         <th>Description</th>
-                                        <th>Created At</th>
+                                        <th>
+                                            Created 
+                                            {% if current_sort == '-created_at' %}
+                                                <i class="fas fa-sort-numeric-down text-primary"></i>
+                                            {% elif current_sort == 'created_at' %}
+                                                <i class="fas fa-sort-numeric-up text-primary"></i>
+                                            {% endif %}
+                                        </th>
                                         <th>Actions</th>
                                     </tr>
                                 </thead>
@@ -74,9 +143,15 @@
                         </div>
                         {% else %}
                         <div class="text-center py-5">
-                            <i class="fas fa-flag fa-4x text-muted mb-3"></i>
-                            <h4 class="text-muted casual-font">No priorities yet</h4>
-                            <p class="text-muted body-font">Create priority levels with colors for your tasks</p>
+                            {% if search_query %}
+                                <i class="fas fa-search fa-4x text-muted mb-3"></i>
+                                <h4 class="text-muted casual-font">No priorities found</h4>
+                                <p class="text-muted body-font">No priorities match your search "{{ search_query }}"</p>
+                            {% else %}
+                                <i class="fas fa-flag fa-4x text-muted mb-3"></i>
+                                <h4 class="text-muted casual-font">No priorities yet</h4>
+                                <p class="text-muted body-font">Create priority levels with colors for your tasks</p>
+                            {% endif %}
                             <a href="{% url 'priority-add' %}" class="btn btn-primary mt-3">
                                 <i class="fas fa-plus"></i> Create First Priority
                             </a>
@@ -103,5 +178,49 @@
         transform: scale(1.1);
         box-shadow: 0 4px 8px rgba(0,0,0,0.2);
     }
+
+    .form-inline .form-group {
+        display: flex;
+        align-items: center;
+    }
+
+    .table th {
+        cursor: pointer;
+        user-select: none;
+    }
+
+    .table th:hover {
+        background-color: #f8f9fa;
+    }
 </style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Auto-submit sort dropdown when changed
+    document.getElementById('sortSelect').addEventListener('change', function() {
+        this.form.submit();
+    });
+
+    // Add click handlers to table headers for sorting
+    const tableHeaders = document.querySelectorAll('.table th');
+    tableHeaders.forEach(header => {
+        header.addEventListener('click', function() {
+            const currentSort = '{{ current_sort }}';
+            let newSort;
+            
+            if (this.cellIndex === 0) { // Name column
+                newSort = currentSort === 'name' ? '-name' : 'name';
+            } else if (this.cellIndex === 3) { // Created column
+                newSort = currentSort === '-created_at' ? 'created_at' : '-created_at';
+            } else {
+                return;
+            }
+            
+            // Update the sort select and submit form
+            document.getElementById('sortSelect').value = newSort;
+            document.getElementById('sortSelect').form.submit();
+        });
+    });
+});
+</script>
 {% endblock %}

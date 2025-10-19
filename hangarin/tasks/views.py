@@ -1,8 +1,9 @@
 from django.views.generic import ListView, CreateView, UpdateView, DeleteView, TemplateView, DetailView
 from .models import Task
 import json
+from django.db.models import Q
 from django.utils import timezone
-from datetime import datetime,  timedelta
+from datetime import datetime, timedelta
 from django.urls import reverse_lazy
 from .models import Task, Category, Priority, Note, SubTask
 from .forms import TaskForm, CategoryForm, PriorityForm, NoteForm, SubTaskForm
@@ -11,14 +12,74 @@ class TaskDetailView(DetailView):
     model = Task
     template_name = 'task/task_detail.html'
     context_object_name = 'task'
-    
+
 class TaskListView(ListView):
     model = Task
     context_object_name = 'tasks'
     template_name = 'task/task_list.html'
     paginate_by = 10
-    ordering = ['-created_at']
 
+    def get_queryset(self):
+        queryset = super().get_queryset()
+        
+        # Get filter parameters
+        search_query = self.request.GET.get('q', '')
+        category_filter = self.request.GET.get('category', '')
+        priority_filter = self.request.GET.get('priority', '')
+        status_filter = self.request.GET.get('status', '')
+        sort_by = self.request.GET.get('sort', '-created_at')
+        
+        # Apply search filter
+        if search_query:
+            queryset = queryset.filter(
+                Q(title__icontains=search_query) | 
+                Q(description__icontains=search_query)
+            )
+        
+        # Apply category filter - show ONLY tasks from selected category
+        if category_filter:
+            queryset = queryset.filter(category_id=category_filter)
+        
+        # Apply priority filter - show ONLY tasks with selected priority
+        if priority_filter:
+            queryset = queryset.filter(priority_id=priority_filter)
+        
+        # Apply status filter - show ONLY tasks with selected status
+        if status_filter:
+            queryset = queryset.filter(status=status_filter)
+        
+        # Apply sorting
+        valid_sorts = ['title', '-title', 'deadline', '-deadline', 'created_at', '-created_at']
+        if sort_by in valid_sorts:
+            queryset = queryset.order_by(sort_by)
+        else:
+            queryset = queryset.order_by('-created_at')
+        
+        return queryset
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        
+        # Get current filter values
+        context['current_search'] = self.request.GET.get('q', '')
+        context['current_category'] = self.request.GET.get('category', '')
+        context['current_priority'] = self.request.GET.get('priority', '')
+        context['current_status'] = self.request.GET.get('status', '')
+        context['current_sort'] = self.request.GET.get('sort', '-created_at')
+        
+        # Add filter options to context
+        context['categories'] = Category.objects.all()
+        context['priorities'] = Priority.objects.all()
+        
+        # Define status choices directly in the view
+        context['status_choices'] = [
+            ('Pending', 'Pending'),
+            ('In Progress', 'In Progress'),
+            ('Completed', 'Completed')
+        ]
+        
+        return context
+    
 class TaskCreateView(CreateView):
     model = Task
     form_class = TaskForm
@@ -36,12 +97,42 @@ class TaskDeleteView(DeleteView):
     template_name = 'task/task_confirm_delete.html'
     success_url = reverse_lazy('task-list')
 
-# Category Views
+# Category Views with Search and Sorting
 class CategoryListView(ListView):
     model = Category
     context_object_name = 'categories'
     template_name = 'task/category_list.html'
     paginate_by = 10
+
+    def get_queryset(self):
+        qs = super().get_queryset()
+        query = self.request.GET.get('q')
+        
+        if query:
+            qs = qs.filter(name__icontains=query)
+        return qs
+
+    def get_ordering(self):
+        allowed = ['name', '-name', 'created_at', '-created_at']
+        sort_by = self.request.GET.get('sort_by', 'name')
+        if sort_by in allowed:
+            return sort_by
+        return 'name'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['search_query'] = self.request.GET.get('q', '')
+        context['current_sort'] = self.request.GET.get('sort_by', 'name')
+        context['total_categories'] = Category.objects.count()
+        
+        context['sort_options'] = [
+            {'value': 'name', 'label': 'Name A-Z'},
+            {'value': '-name', 'label': 'Name Z-A'},
+            {'value': '-created_at', 'label': 'Newest First'},
+            {'value': 'created_at', 'label': 'Oldest First'}
+        ]
+        
+        return context
 
 class CategoryCreateView(CreateView):
     model = Category
@@ -60,12 +151,46 @@ class CategoryDeleteView(DeleteView):
     template_name = 'task/category_confirm_delete.html'
     success_url = reverse_lazy('category-list')
 
-# Priority Views
+# Priority Views with Search and Sorting
+# Priority Views with Search and Sorting
 class PriorityListView(ListView):
     model = Priority
     context_object_name = 'priorities'
     template_name = 'task/priority_list.html'
     paginate_by = 10
+
+    def get_queryset(self):
+        qs = super().get_queryset()
+        query = self.request.GET.get('q')
+        
+        if query:
+            qs = qs.filter(
+                Q(name__icontains=query) |
+                Q(color__icontains=query)  # Removed description, added color
+            )
+        return qs
+
+    def get_ordering(self):
+        allowed = ['name', '-name', 'created_at', '-created_at']
+        sort_by = self.request.GET.get('sort_by', 'name')
+        if sort_by in allowed:
+            return sort_by
+        return 'name'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['search_query'] = self.request.GET.get('q', '')
+        context['current_sort'] = self.request.GET.get('sort_by', 'name')
+        context['total_priorities'] = Priority.objects.count()
+        
+        context['sort_options'] = [
+            {'value': 'name', 'label': 'Name A-Z'},
+            {'value': '-name', 'label': 'Name Z-A'},
+            {'value': '-created_at', 'label': 'Newest First'},
+            {'value': 'created_at', 'label': 'Oldest First'}
+        ]
+        
+        return context
 
 class PriorityCreateView(CreateView):
     model = Priority
@@ -84,13 +209,44 @@ class PriorityDeleteView(DeleteView):
     template_name = 'task/priority_confirm_delete.html'
     success_url = reverse_lazy('priority-list')
 
-# Note Views
+# Note Views with Search and Sorting
 class NoteListView(ListView):
     model = Note
     context_object_name = 'notes'
     template_name = 'task/note_list.html'
     paginate_by = 10
-    ordering = ['-created_at']
+
+    def get_queryset(self):
+        qs = super().get_queryset()
+        query = self.request.GET.get('q')
+        
+        if query:
+            qs = qs.filter(
+                Q(content__icontains=query) |
+                Q(task__title__icontains=query)
+            )
+        return qs
+
+    def get_ordering(self):
+        allowed = ['-created_at', 'created_at', 'task__title']
+        sort_by = self.request.GET.get('sort_by', '-created_at')
+        if sort_by in allowed:
+            return sort_by
+        return '-created_at'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['search_query'] = self.request.GET.get('q', '')
+        context['current_sort'] = self.request.GET.get('sort_by', '-created_at')
+        context['total_notes'] = Note.objects.count()
+        
+        context['sort_options'] = [
+            {'value': '-created_at', 'label': 'Newest First'},
+            {'value': 'created_at', 'label': 'Oldest First'},
+            {'value': 'task__title', 'label': 'Task Title'}
+        ]
+        
+        return context
 
 class NoteCreateView(CreateView):
     model = Note
@@ -109,13 +265,62 @@ class NoteDeleteView(DeleteView):
     template_name = 'task/note_confirm_delete.html'
     success_url = reverse_lazy('note-list')
 
-# SubTask Views
+# SubTask Views with Search and Sorting
 class SubTaskListView(ListView):
     model = SubTask
     context_object_name = 'subtasks'
     template_name = 'task/subtask_list.html'
     paginate_by = 10
-    ordering = ['-created_at']
+
+    def get_queryset(self):
+        queryset = super().get_queryset()
+        
+        # Get filter parameters
+        search_query = self.request.GET.get('q', '')
+        status_filter = self.request.GET.get('status', '')
+        sort_by = self.request.GET.get('sort', '-created_at')
+        
+        # Apply search filter - only on existing fields
+        if search_query:
+            queryset = queryset.filter(
+                Q(title__icontains=search_query) |
+                Q(task__title__icontains=search_query)  # Only search on title and parent task title
+            )
+        
+        # Apply status filter - show ONLY subtasks with selected status
+        if status_filter:
+            queryset = queryset.filter(status=status_filter)
+        
+        # Apply sorting
+        valid_sorts = ['-created_at', 'created_at', 'title', '-title', 'status', 'deadline', '-deadline', 'task__title']
+        if sort_by in valid_sorts:
+            queryset = queryset.order_by(sort_by)
+        else:
+            queryset = queryset.order_by('-created_at')
+        
+        return queryset
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        
+        # Get current filter values
+        context['search_query'] = self.request.GET.get('q', '')
+        context['current_status'] = self.request.GET.get('status', '')
+        context['current_sort'] = self.request.GET.get('sort', '-created_at')
+        
+        # Define status choices
+        context['status_choices'] = [
+            ('Pending', 'Pending'),
+            ('In Progress', 'In Progress'),
+            ('Completed', 'Completed')
+        ]
+        
+        return context
+
+class SubTaskDetailView(DetailView):
+    model = SubTask
+    template_name = 'subtask_detail.html'
+    context_object_name = 'subtask'
 
 class SubTaskCreateView(CreateView):
     model = SubTask
@@ -134,7 +339,7 @@ class SubTaskDeleteView(DeleteView):
     template_name = 'task/subtask_confirm_delete.html'
     success_url = reverse_lazy('subtask-list')
 
-# Home Page View
+# Enhanced Home Page View with Dashboard Statistics
 class HomePageView(TemplateView):
     template_name = "home.html"
     
@@ -145,11 +350,25 @@ class HomePageView(TemplateView):
         # Basic statistics
         context['total_tasks'] = Task.objects.count()
         context['pending_tasks'] = Task.objects.filter(status='Pending').count()
+        context['in_progress_tasks'] = Task.objects.filter(status='In Progress').count()
         context['completed_tasks'] = Task.objects.filter(status='Completed').count()
         context['overdue_tasks'] = Task.objects.filter(
             deadline__lt=today, 
             status__in=['Pending', 'In Progress']
         ).count()
+        
+        # Additional dashboard statistics
+        context['total_categories'] = Category.objects.count()
+        context['total_priorities'] = Priority.objects.count()
+        context['total_notes'] = Note.objects.count()
+        context['total_subtasks'] = SubTask.objects.count()
+        
+        # Progress statistics
+        if context['total_tasks'] > 0:
+            context['completion_rate'] = round((context['completed_tasks'] / context['total_tasks']) * 100, 1)
+        else:
+            context['completion_rate'] = 0
+            
         context['current_year'] = today.year
         context['current_month'] = today.strftime("%B")
         
@@ -182,7 +401,7 @@ class HomePageView(TemplateView):
         
         monthly_tasks = Task.objects.filter(
             deadline__date__range=[start_of_month, end_of_month]
-        ).select_related('priority')  # Optimize query
+        ).select_related('priority')
         
         # Create enhanced tasks by date dictionary
         tasks_by_date = {}

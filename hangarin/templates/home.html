@@ -224,7 +224,7 @@
                                         <td>
                                             <span class="badge" 
                                                   style="background-color: {{ task.priority.color }}; 
-                                                         color: white;
+                                                         color: dark-blue;
                                                          padding: 6px 12px;
                                                          border-radius: 15px;
                                                          font-weight: 600;">
@@ -249,6 +249,11 @@
                                         <td>
                                             <a href="{% url 'task-update' task.id %}" class="btn btn-sm btn-outline-primary">
                                                 <i class="fas fa-edit"></i> 
+                                            </a>
+                                        </td>
+                                        <td>
+                                            <a href="{% url 'task-detail' task.id %}" class="btn btn-sm btn-outline-info">
+                                                <i class="fas fa-eye"></i> 
                                             </a>
                                         </td>
                                     </tr>
@@ -527,6 +532,40 @@
             font-size: 0.5rem;
         }
     }
+
+    /* General text color adjustments for better contrast */
+    .card-body {
+        color: #073B4C;
+    }
+
+    .table {
+        color: #073B4C;
+    }
+
+    .body-font {
+        color: #073B4C;
+    }
+
+    .text-muted {
+        color: #118AB2 !important; /* Use your sky blue for muted text */
+    }
+
+    /* Ensure good contrast on cards */
+    .card {
+        color: #073B4C;
+    }
+
+    .card-title {
+        color: #073B4C;
+    }
+
+    .card-category {
+        color: #118AB2;
+    }
+   
+    .badge-secondary {
+    color: #073B4C;
+}
 </style>
 
 <script>

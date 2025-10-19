@@ -47,6 +47,7 @@ class Task(BaseModel):
 
 class SubTask(BaseModel):
     task = models.ForeignKey(Task, on_delete=models.CASCADE, related_name='subtasks')
+    description = models.TextField(blank=True, null=True)
     title = models.CharField(max_length=200)
     status = models.CharField(
         max_length=50,
