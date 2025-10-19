@@ -1,0 +1,481 @@
+{% load socialaccount %} {% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+<title>Hangarin - Register</title>
+<!-- Bootstrap + MDB + Custom CSS -->
+<link rel="stylesheet" href="{% static 'css/bootstrap.min.css' %}" />
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/mdb-ui-kit/6.4.2/mdb.min.css" />
+<style>
+:root {
+    --sunshine-yellow: #FFD166;
+    --sky-blue: #118AB2;
+    --light-blue: #a1c4fd;
+    --ocean-blue: #073B4C;
+    --cloud-white: #FFFFFF;
+}
+
+body {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    margin: 0;
+    background: linear-gradient(135deg, var(--light-blue) 0%, var(--sky-blue) 50%, var(--sunshine-yellow) 100%);
+    background-attachment: fixed;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.auth-card {
+    max-width: 500px;
+    width: 90%;
+    background: rgba(255, 255, 255, 0.95);
+    border-radius: 20px;
+    box-shadow: 0 15px 35px rgba(17, 138, 178, 0.3);
+    padding: 2.5rem;
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    position: relative;
+    overflow: hidden;
+}
+
+.auth-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, var(--sunshine-yellow), var(--sky-blue));
+}
+
+.btn-primary {
+    background: linear-gradient(135deg, var(--sky-blue), var(--ocean-blue));
+    border: none;
+    border-radius: 12px;
+    padding: 12px 30px;
+    font-weight: 600;
+    box-shadow: 0 4px 15px rgba(17, 138, 178, 0.3);
+    transition: all 0.3s ease;
+}
+
+.btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(17, 138, 178, 0.4);
+    background: linear-gradient(135deg, var(--ocean-blue), var(--sky-blue));
+}
+
+.btn-outline-primary {
+    border: 2px solid var(--sky-blue);
+    color: var(--sky-blue);
+    border-radius: 12px;
+    padding: 12px 30px;
+    font-weight: 600;
+    transition: all 0.3s ease;
+}
+
+.btn-outline-primary:hover {
+    background: var(--sky-blue);
+    color: white;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(17, 138, 178, 0.3);
+}
+
+.btn-link {
+    color: var(--sky-blue);
+    transition: all 0.3s ease;
+}
+
+.btn-link:hover {
+    color: var(--ocean-blue);
+    transform: scale(1.1);
+}
+
+.form-outline {
+    margin-bottom: 1.5rem;
+}
+
+.form-control {
+    border-radius: 12px;
+    padding: 12px 15px;
+    border: 2px solid #e9ecef;
+    transition: all 0.3s ease;
+    font-size: 1rem;
+}
+
+.form-control:focus {
+    border-color: var(--sky-blue);
+    box-shadow: 0 0 0 0.2rem rgba(17, 138, 178, 0.25);
+}
+
+.form-label {
+    color: var(--ocean-blue);
+    font-weight: 500;
+    margin-bottom: 0.5rem;
+}
+
+.alert-danger {
+    background: rgba(220, 53, 69, 0.1);
+    border: 1px solid rgba(220, 53, 69, 0.2);
+    border-radius: 12px;
+    color: #dc3545;
+}
+
+.social-buttons .btn-link {
+    background: rgba(255, 255, 255, 0.8);
+    border-radius: 50%;
+    width: 50px;
+    height: 50px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 8px;
+    border: 2px solid transparent;
+    transition: all 0.3s ease;
+}
+
+.social-buttons .btn-link:hover {
+    background: white;
+    border-color: var(--sunshine-yellow);
+    transform: translateY(-3px);
+    box-shadow: 0 5px 15px rgba(255, 209, 102, 0.4);
+}
+
+.divider {
+    display: flex;
+    align-items: center;
+    text-align: center;
+    margin: 20px 0;
+    color: var(--ocean-blue);
+    font-weight: 500;
+}
+
+.divider::before,
+.divider::after {
+    content: '';
+    flex: 1;
+    border-bottom: 1px solid rgba(17, 138, 178, 0.3);
+}
+
+.divider::before {
+    margin-right: 10px;
+}
+
+.divider::after {
+    margin-left: 10px;
+}
+
+/* Animation for card entrance */
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.auth-card {
+    animation: fadeInUp 0.6s ease-out;
+}
+
+/* Password strength indicator */
+.password-strength {
+    margin-top: 5px;
+    height: 4px;
+    border-radius: 2px;
+    background: #e9ecef;
+    overflow: hidden;
+}
+
+.strength-bar {
+    height: 100%;
+    border-radius: 2px;
+    transition: all 0.3s ease;
+}
+
+.strength-weak { background: #dc3545; width: 25%; }
+.strength-fair { background: #fd7e14; width: 50%; }
+.strength-good { background: #ffc107; width: 75%; }
+.strength-strong { background: #198754; width: 100%; }
+
+/* Responsive adjustments */
+@media (max-width: 576px) {
+    .auth-card {
+        padding: 2rem 1.5rem;
+        margin: 20px;
+    }
+    
+    .social-buttons .btn-link {
+        width: 45px;
+        height: 45px;
+        margin: 0 5px;
+    }
+}
+
+/* Logo/brand styling */
+.brand {
+    text-align: center;
+    margin-bottom: 2rem;
+}
+
+.brand h1 {
+    color: var(--ocean-blue);
+    font-size: 2.5rem;
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+    background: linear-gradient(135deg, var(--sky-blue), var(--ocean-blue));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.brand p {
+    color: var(--sky-blue);
+    font-size: 1rem;
+    margin: 0;
+}
+
+/* Form header */
+.form-header {
+    text-align: center;
+    margin-bottom: 2rem;
+}
+
+.form-header h2 {
+    color: var(--ocean-blue);
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+}
+
+.form-header p {
+    color: var(--sky-blue);
+    margin: 0;
+}
+
+/* Terms and conditions */
+.terms {
+    margin: 1.5rem 0;
+    padding: 1rem;
+    background: rgba(17, 138, 178, 0.05);
+    border-radius: 12px;
+    border: 1px solid rgba(17, 138, 178, 0.1);
+}
+
+.terms .form-check {
+    margin: 0;
+}
+
+.terms .form-check-label {
+    color: var(--ocean-blue);
+    font-size: 0.9rem;
+}
+
+.terms a {
+    color: var(--sky-blue);
+    text-decoration: none;
+}
+
+.terms a:hover {
+    text-decoration: underline;
+}
+
+/* Login link */
+.login-link {
+    text-align: center;
+    margin-top: 1.5rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid rgba(17, 138, 178, 0.1);
+}
+
+.login-link a {
+    color: var(--sky-blue);
+    text-decoration: none;
+    font-weight: 600;
+    transition: all 0.3s ease;
+}
+
+.login-link a:hover {
+    color: var(--ocean-blue);
+    text-decoration: underline;
+}
+</style>
+</head>
+<body>
+<div class="auth-card">
+    <!-- Brand/Logo -->
+    <div class="brand">
+        <h1><i class="fas fa-tasks"></i> Hangarin</h1>
+        <p>Your Personal Task Manager</p>
+    </div>
+
+    <!-- Form Header -->
+    <div class="form-header">
+        <h2>Create Your Account</h2>
+        <p>Join thousands of productive users</p>
+    </div>
+
+    <form method="post" action="{% url 'account_signup' %}">
+        {% csrf_token %}
+        
+        <!-- Social Registration -->
+        <div class="text-center mb-4">
+            <p class="mb-3" style="color: var(--ocean-blue); font-weight: 500;">Sign up with:</p>
+            <div class="social-buttons">
+                <a href="{% provider_login_url 'google' %}" class="btn btn-link btn-floating mx-1" title="Sign up with Google">
+                    <i class="fab fa-google fa-lg" style="color: #DB4437;"></i>
+                </a>
+                <a href="{% provider_login_url 'github' %}" class="btn btn-link btn-floating mx-1" title="Sign up with GitHub">
+                    <i class="fab fa-github fa-lg" style="color: #333;"></i>
+                </a>
+            </div>
+        </div>
+
+        <div class="divider">or register with email</div>
+
+        <!-- Username -->
+        <div data-mdb-input-init class="form-outline">
+            <input type="text" name="username" id="registerUsername" class="form-control" required />
+            <label class="form-label" for="registerUsername">
+                <i class="fas fa-user me-2"></i>Username
+            </label>
+        </div>
+
+        <!-- Email -->
+        <div data-mdb-input-init class="form-outline">
+            <input type="email" name="email" id="registerEmail" class="form-control" required />
+            <label class="form-label" for="registerEmail">
+                <i class="fas fa-envelope me-2"></i>Email Address
+            </label>
+        </div>
+
+        <!-- Password -->
+        <div data-mdb-input-init class="form-outline">
+            <input type="password" name="password1" id="registerPassword" class="form-control" required 
+                   oninput="checkPasswordStrength(this.value)" />
+            <label class="form-label" for="registerPassword">
+                <i class="fas fa-lock me-2"></i>Password
+            </label>
+            <div class="password-strength">
+                <div class="strength-bar" id="passwordStrength"></div>
+            </div>
+            <small class="form-text text-muted">
+                Use 8+ characters with a mix of letters, numbers & symbols
+            </small>
+        </div>
+
+        <!-- Confirm Password -->
+        <div data-mdb-input-init class="form-outline">
+            <input type="password" name="password2" id="registerRepeatPassword" class="form-control" required />
+            <label class="form-label" for="registerRepeatPassword">
+                <i class="fas fa-lock me-2"></i>Confirm Password
+            </label>
+        </div>
+
+        <!-- Form Errors -->
+        {% if form.non_field_errors %}
+        <div class="alert alert-danger" role="alert">
+            {% for error in form.non_field_errors %}
+            <p{% if forloop.last %} class="mb-0"{% endif %}>{{ error }}</p>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        {% if form.errors %}
+        <div class="alert alert-danger" role="alert">
+            {% for field in form %}
+                {% for error in field.errors %}
+                    <p><strong>{{ field.label }}:</strong> {{ error }}</p>
+                {% endfor %}
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        <!-- Submit Button -->
+        <button type="submit" class="btn btn-primary btn-block mb-3" style="width: 100%;">
+            <i class="fas fa-user-plus me-2"></i>Create Account
+        </button>
+
+        <!-- Login Link -->
+        <div class="login-link">
+            <p>Already have an account? <a href="{% url 'account_login' %}">Sign in here</a></p>
+        </div>
+    </form>
+</div>
+
+<!-- MDB + Bootstrap JS -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mdb-ui-kit/6.4.2/mdb.min.js"></script>
+
+<script>
+function checkPasswordStrength(password) {
+    const strengthBar = document.getElementById('passwordStrength');
+    let strength = 0;
+    
+    // Length check
+    if (password.length >= 8) strength += 1;
+    
+    // Contains lowercase
+    if (password.match(/[a-z]+/)) strength += 1;
+    
+    // Contains uppercase
+    if (password.match(/[A-Z]+/)) strength += 1;
+    
+    // Contains numbers
+    if (password.match(/[0-9]+/)) strength += 1;
+    
+    // Contains special characters
+    if (password.match(/[!@#$%^&*(),.?":{}|<>]+/)) strength += 1;
+    
+    // Update strength bar
+    strengthBar.className = 'strength-bar';
+    if (password.length === 0) {
+        strengthBar.style.width = '0%';
+    } else if (strength <= 2) {
+        strengthBar.classList.add('strength-weak');
+    } else if (strength === 3) {
+        strengthBar.classList.add('strength-fair');
+    } else if (strength === 4) {
+        strengthBar.classList.add('strength-good');
+    } else {
+        strengthBar.classList.add('strength-strong');
+    }
+}
+
+// Add some interactivity to form inputs
+document.addEventListener('DOMContentLoaded', function() {
+    const inputs = document.querySelectorAll('.form-control');
+    
+    inputs.forEach(input => {
+        // Add focus/blur effects
+        input.addEventListener('focus', function() {
+            this.parentElement.classList.add('focused');
+        });
+        
+        input.addEventListener('blur', function() {
+            if (this.value === '') {
+                this.parentElement.classList.remove('focused');
+            }
+        });
+        
+        // Check initial values
+        if (input.value !== '') {
+            input.parentElement.classList.add('focused');
+        }
+    });
+    
+    // Form submission animation
+    const form = document.querySelector('form');
+    form.addEventListener('submit', function(e) {
+        const submitBtn = this.querySelector('button[type="submit"]');
+        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Creating Account...';
+        submitBtn.disabled = true;
+    });
+});
+</script>
+</body>
+</html>
