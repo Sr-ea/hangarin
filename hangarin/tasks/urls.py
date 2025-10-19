@@ -40,7 +40,6 @@ urlpatterns = [
     
     # SubTask URLs
     path('subtasks/', SubTaskListView.as_view(), name='subtask-list'),
-     path('subtasks/<int:pk>/', SubTaskDetailView.as_view(), name='subtask-detail'),
     path('subtasks/add/', SubTaskCreateView.as_view(), name='subtask-add'),
     path('subtasks/<int:pk>/', SubTaskUpdateView.as_view(), name='subtask-update'),
     path('subtasks/<int:pk>/delete/', SubTaskDeleteView.as_view(), name='subtask-delete'),

@@ -1,5 +1,6 @@
 from django.views.generic import ListView, CreateView, UpdateView, DeleteView, TemplateView, DetailView
 from .models import Task
+from django.contrib.auth.mixins import LoginRequiredMixin
 import json
 from django.db.models import Q
 from django.utils import timezone
@@ -8,12 +9,12 @@ from django.urls import reverse_lazy
 from .models import Task, Category, Priority, Note, SubTask
 from .forms import TaskForm, CategoryForm, PriorityForm, NoteForm, SubTaskForm
 
-class TaskDetailView(DetailView):
+class TaskDetailView(LoginRequiredMixin,DetailView):
     model = Task
     template_name = 'task/task_detail.html'
     context_object_name = 'task'
 
-class TaskListView(ListView):
+class TaskListView(LoginRequiredMixin, ListView):
     model = Task
     context_object_name = 'tasks'
     template_name = 'task/task_list.html'
@@ -80,25 +81,25 @@ class TaskListView(ListView):
         
         return context
     
-class TaskCreateView(CreateView):
+class TaskCreateView(LoginRequiredMixin,CreateView):
     model = Task
     form_class = TaskForm
     template_name = 'task/task_form.html'
     success_url = reverse_lazy('task-list')
 
-class TaskUpdateView(UpdateView):
+class TaskUpdateView(LoginRequiredMixin,UpdateView):
     model = Task
     form_class = TaskForm
     template_name = 'task/task_form.html'
     success_url = reverse_lazy('task-list')
 
-class TaskDeleteView(DeleteView):
+class TaskDeleteView(LoginRequiredMixin,DeleteView):
     model = Task
     template_name = 'task/task_confirm_delete.html'
     success_url = reverse_lazy('task-list')
 
 # Category Views with Search and Sorting
-class CategoryListView(ListView):
+class CategoryListView(LoginRequiredMixin,ListView):
     model = Category
     context_object_name = 'categories'
     template_name = 'task/category_list.html'
@@ -134,26 +135,25 @@ class CategoryListView(ListView):
         
         return context
 
-class CategoryCreateView(CreateView):
+class CategoryCreateView(LoginRequiredMixin,CreateView):
     model = Category
     form_class = CategoryForm
     template_name = 'task/category_form.html'
     success_url = reverse_lazy('category-list')
 
-class CategoryUpdateView(UpdateView):
+class CategoryUpdateView(LoginRequiredMixin,UpdateView):
     model = Category
     form_class = CategoryForm
     template_name = 'task/category_form.html'
     success_url = reverse_lazy('category-list')
 
-class CategoryDeleteView(DeleteView):
+class CategoryDeleteView(LoginRequiredMixin,DeleteView):
     model = Category
     template_name = 'task/category_confirm_delete.html'
     success_url = reverse_lazy('category-list')
 
 # Priority Views with Search and Sorting
-# Priority Views with Search and Sorting
-class PriorityListView(ListView):
+class PriorityListView(LoginRequiredMixin,ListView):
     model = Priority
     context_object_name = 'priorities'
     template_name = 'task/priority_list.html'
@@ -192,25 +192,25 @@ class PriorityListView(ListView):
         
         return context
 
-class PriorityCreateView(CreateView):
+class PriorityCreateView(LoginRequiredMixin,CreateView):
     model = Priority
     form_class = PriorityForm
     template_name = 'task/priority_form.html'
     success_url = reverse_lazy('priority-list')
 
-class PriorityUpdateView(UpdateView):
+class PriorityUpdateView(LoginRequiredMixin,UpdateView):
     model = Priority
     form_class = PriorityForm
     template_name = 'task/priority_form.html'
     success_url = reverse_lazy('priority-list')
 
-class PriorityDeleteView(DeleteView):
+class PriorityDeleteView(LoginRequiredMixin,DeleteView):
     model = Priority
     template_name = 'task/priority_confirm_delete.html'
     success_url = reverse_lazy('priority-list')
 
 # Note Views with Search and Sorting
-class NoteListView(ListView):
+class NoteListView(LoginRequiredMixin,ListView):
     model = Note
     context_object_name = 'notes'
     template_name = 'task/note_list.html'
@@ -248,25 +248,25 @@ class NoteListView(ListView):
         
         return context
 
-class NoteCreateView(CreateView):
+class NoteCreateView(LoginRequiredMixin,CreateView):
     model = Note
     form_class = NoteForm
     template_name = 'task/note_form.html'
     success_url = reverse_lazy('note-list')
 
-class NoteUpdateView(UpdateView):
+class NoteUpdateView(LoginRequiredMixin,UpdateView):
     model = Note
     form_class = NoteForm
     template_name = 'task/note_form.html'
     success_url = reverse_lazy('note-list')
 
-class NoteDeleteView(DeleteView):
+class NoteDeleteView(LoginRequiredMixin,DeleteView):
     model = Note
     template_name = 'task/note_confirm_delete.html'
     success_url = reverse_lazy('note-list')
 
 # SubTask Views with Search and Sorting
-class SubTaskListView(ListView):
+class SubTaskListView(LoginRequiredMixin,ListView):
     model = SubTask
     context_object_name = 'subtasks'
     template_name = 'task/subtask_list.html'
@@ -317,30 +317,30 @@ class SubTaskListView(ListView):
         
         return context
 
-class SubTaskDetailView(DetailView):
+class SubTaskDetailView(LoginRequiredMixin,DetailView):
     model = SubTask
     template_name = 'subtask_detail.html'
     context_object_name = 'subtask'
 
-class SubTaskCreateView(CreateView):
+class SubTaskCreateView(LoginRequiredMixin,CreateView):
     model = SubTask
     form_class = SubTaskForm
     template_name = 'task/subtask_form.html'
     success_url = reverse_lazy('subtask-list')
 
-class SubTaskUpdateView(UpdateView):
+class SubTaskUpdateView(LoginRequiredMixin,UpdateView):
     model = SubTask
     form_class = SubTaskForm
     template_name = 'task/subtask_form.html'
     success_url = reverse_lazy('subtask-list')
 
-class SubTaskDeleteView(DeleteView):
+class SubTaskDeleteView(LoginRequiredMixin,DeleteView):
     model = SubTask
     template_name = 'task/subtask_confirm_delete.html'
     success_url = reverse_lazy('subtask-list')
 
 # Enhanced Home Page View with Dashboard Statistics
-class HomePageView(TemplateView):
+class HomePageView(LoginRequiredMixin,TemplateView):
     template_name = "home.html"
     
     def get_context_data(self, **kwargs):

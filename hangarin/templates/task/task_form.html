@@ -15,7 +15,7 @@
                         <div class="card-category">Enter task details</div>
                     </div>
                     <div class="card-body">
-                        <form method="post" novalidate>
+                        <form method="post" novalidate id="taskForm">
                             {% csrf_token %}
                             
                             {% if form.non_field_errors %}
@@ -26,21 +26,90 @@
                             </div>
                             {% endif %}
 
-                            {% for field in form %}
-                            <div class="form-group">
-                                <label for="{{ field.id_for_label }}">{{ field.label }}</label>
-                                {% render_field field class="form-control" %}
-                                {% for error in field.errors %}
-                                    <div class="invalid-feedback d-block">
-                                        {{ error }}
+                            <div class="row">
+                                <!-- Left Column - Basic Info -->
+                                <div class="col-md-6">
+                                    <!-- Title -->
+                                    <div class="form-group">
+                                        <label for="{{ form.title.id_for_label }}">{{ form.title.label }}</label>
+                                        {% render_field form.title class="form-control" placeholder="Enter task title" %}
+                                        {% for error in form.title.errors %}
+                                            <div class="invalid-feedback d-block">
+                                                {{ error }}
+                                            </div>
+                                        {% endfor %}
                                     </div>
-                                {% endfor %}
-                            </div>
-                            {% endfor %}
 
-                            <div class="form-group">
-                                <button type="submit" class="btn btn-primary">Submit</button>
-                                <a href="{% url 'task-list' %}" class="btn btn-secondary">Cancel</a>
+                                    <!-- Description -->
+                                    <div class="form-group">
+                                        <label for="{{ form.description.id_for_label }}">{{ form.description.label }}</label>
+                                        {% render_field form.description class="form-control" rows="3" placeholder="Enter task description" %}
+                                        {% for error in form.description.errors %}
+                                            <div class="invalid-feedback d-block">
+                                                {{ error }}
+                                            </div>
+                                        {% endfor %}
+                                    </div>
+
+                                    <!-- Status -->
+                                    <div class="form-group">
+                                        <label for="{{ form.status.id_for_label }}">{{ form.status.label }}</label>
+                                        {% render_field form.status class="form-control" %}
+                                        {% for error in form.status.errors %}
+                                            <div class="invalid-feedback d-block">
+                                                {{ error }}
+                                            </div>
+                                        {% endfor %}
+                                    </div>
+                                </div>
+
+                                <!-- Right Column - Scheduling & Categories -->
+                                <div class="col-md-6">
+                                    <!-- Deadline with Calendar and Time Picker -->
+                                    <div class="form-group">
+                                        <label for="{{ form.deadline.id_for_label }}">{{ form.deadline.label }}</label>
+                                        <div class="input-group">
+                                            {% render_field form.deadline class="form-control" id="deadlineInput" type="datetime-local" %}
+                                        </div>
+                                        {% for error in form.deadline.errors %}
+                                            <div class="invalid-feedback d-block">
+                                                {{ error }}
+                                            </div>
+                                        {% endfor %}
+                                    </div>
+
+                                    <!-- Priority -->
+                                    <div class="form-group">
+                                        <label for="{{ form.priority.id_for_label }}">{{ form.priority.label }}</label>
+                                        {% render_field form.priority class="form-control" %}
+                                        {% for error in form.priority.errors %}
+                                            <div class="invalid-feedback d-block">
+                                                {{ error }}
+                                            </div>
+                                        {% endfor %}
+                                    </div>
+
+                                    <!-- Category -->
+                                    <div class="form-group">
+                                        <label for="{{ form.category.id_for_label }}">{{ form.category.label }}</label>
+                                        {% render_field form.category class="form-control" %}
+                                        {% for error in form.category.errors %}
+                                            <div class="invalid-feedback d-block">
+                                                {{ error }}
+                                            </div>
+                                        {% endfor %}
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Action Buttons -->
+                            <div class="form-group mt-4">
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="fas fa-save"></i> {% if object %}Update Task{% else %}Create Task{% endif %}
+                                </button>
+                                <a href="{% url 'task-list' %}" class="btn btn-secondary">
+                                    <i class="fas fa-times"></i> Cancel
+                                </a>
                             </div>
                         </form>
                     </div>
@@ -49,4 +118,223 @@
         </div>
     </div>
 </div>
+
+<!-- Calendar Modal -->
+<div class="modal fade" id="calendarModal" tabindex="-1" role="dialog" aria-labelledby="calendarModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="calendarModalLabel">Select Date and Time</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <div id="datepicker"></div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label for="timeInput">Time:</label>
+                            <input type="time" class="form-control" id="timeInput" value="12:00">
+                        </div>
+                        <div class="current-time mt-3">
+                            <small class="text-muted">
+                                <i class="fas fa-clock"></i> Current time: <span id="currentTime"></span>
+                            </small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary" id="applyDateTime">Apply</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+/* Custom styles for the datepicker and form */
+.form-group {
+    margin-bottom: 1.5rem;
+}
+
+#datepicker {
+    width: 100%;
+}
+
+.ui-datepicker {
+    background: white;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    padding: 10px;
+}
+
+.ui-datepicker-header {
+    background: var(--ocean-blue);
+    color: white;
+    border: none;
+}
+
+.ui-datepicker-calendar .ui-state-active {
+    background: var(--sky-blue);
+    color: white;
+}
+
+.quick-deadline-buttons .btn {
+    margin: 2px;
+    font-size: 0.8rem;
+}
+
+/* Make the datetime input more visible */
+#deadlineInput {
+    background-color: #f8f9fa;
+    border-right: none;
+}
+
+.input-group-append .btn {
+    border-left: none;
+}
+
+/* Modal styling */
+.modal-content {
+    border-radius: 10px;
+    border: none;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+}
+
+.modal-header {
+    background: var(--ocean-blue);
+    color: white;
+    border-radius: 10px 10px 0 0;
+}
+
+.modal-header .close {
+    color: white;
+    opacity: 0.8;
+}
+
+.modal-header .close:hover {
+    opacity: 1;
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+    .col-md-6 {
+        margin-bottom: 1rem;
+    }
+    
+    .btn-group-sm .btn {
+        font-size: 0.7rem;
+        padding: 0.25rem 0.5rem;
+    }
+}
+</style>
+
+<!-- Include jQuery UI for datepicker -->
+<link rel="stylesheet" href="https://code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
+<script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Initialize datepicker
+    $('#datepicker').datepicker({
+        dateFormat: 'yy-mm-dd',
+        minDate: 0,
+        showButtonPanel: true,
+        currentText: "Today",
+        changeMonth: true,
+        changeYear: true,
+        yearRange: "2024:2030"
+    });
+
+    // Update current time display
+    function updateCurrentTime() {
+        const now = new Date();
+        const timeString = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        document.getElementById('currentTime').textContent = timeString;
+    }
+    updateCurrentTime();
+    setInterval(updateCurrentTime, 60000); // Update every minute
+
+    // Calendar toggle functionality
+    document.getElementById('calendarToggle').addEventListener('click', function() {
+        const currentValue = document.getElementById('deadlineInput').value;
+        if (currentValue) {
+            const [datePart, timePart] = currentValue.split('T');
+            $('#datepicker').datepicker('setDate', datePart);
+            document.getElementById('timeInput').value = timePart || '12:00';
+        } else {
+            // Set to current date and time if no value
+            const now = new Date();
+            const dateString = now.toISOString().split('T')[0];
+            const timeString = now.toTimeString().split(' ')[0].substring(0, 5);
+            $('#datepicker').datepicker('setDate', dateString);
+            document.getElementById('timeInput').value = timeString;
+        }
+        $('#calendarModal').modal('show');
+    });
+
+    // Apply date and time from modal
+    document.getElementById('applyDateTime').addEventListener('click', function() {
+        const selectedDate = $('#datepicker').datepicker('getDate');
+        const selectedTime = document.getElementById('timeInput').value;
+        
+        if (selectedDate && selectedTime) {
+            const dateString = selectedDate.toISOString().split('T')[0];
+            const datetimeString = `${dateString}T${selectedTime}`;
+            document.getElementById('deadlineInput').value = datetimeString;
+        }
+        
+        $('#calendarModal').modal('hide');
+    });
+
+    // Quick deadline buttons
+    document.querySelectorAll('[data-hours]').forEach(button => {
+        button.addEventListener('click', function() {
+            const hours = parseInt(this.getAttribute('data-hours'));
+            const deadline = new Date();
+            deadline.setHours(deadline.getHours() + hours);
+            
+            // Format for datetime-local input
+            const year = deadline.getFullYear();
+            const month = String(deadline.getMonth() + 1).padStart(2, '0');
+            const day = String(deadline.getDate()).padStart(2, '0');
+            const hoursFormatted = String(deadline.getHours()).padStart(2, '0');
+            const minutes = String(deadline.getMinutes()).padStart(2, '0');
+            
+            const datetimeString = `${year}-${month}-${day}T${hoursFormatted}:${minutes}`;
+            document.getElementById('deadlineInput').value = datetimeString;
+        });
+    });
+
+    // Clear deadline button
+    document.getElementById('clearDeadline').addEventListener('click', function() {
+        document.getElementById('deadlineInput').value = '';
+    });
+
+    // Set minimum datetime to current time
+    const now = new Date();
+    const minDateTime = now.toISOString().slice(0, 16);
+    document.getElementById('deadlineInput').min = minDateTime;
+
+    // Form validation for deadline
+    document.getElementById('taskForm').addEventListener('submit', function(e) {
+        const deadlineInput = document.getElementById('deadlineInput');
+        if (deadlineInput.value) {
+            const selectedDate = new Date(deadlineInput.value);
+            if (selectedDate < now) {
+                e.preventDefault();
+                alert('Please select a future date and time for the deadline.');
+                deadlineInput.focus();
+            }
+        }
+    });
+
+    // Auto-focus on title field when page loads
+    document.getElementById('{{ form.title.id_for_label }}').focus();
+});
+</script>
 {% endblock %}
