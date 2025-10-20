@@ -1,4 +1,5 @@
 {% load static %}
+{% load socialaccount %}
 <!DOCTYPE html>
 <html>
 <head>
@@ -145,31 +146,37 @@
 
 		.profile-pic {
     border-radius: 50% !important;
-    object-fit: cover !important;
+    object-fit: fill !important;
 }
 
 .header-profile-photo img {
     border-radius: 50% !important;
-    object-fit: cover !important;
+    object-fit: contain !important;
 }
 
 .profile-button img {
-    border-radius: 50% !important;
-    object-fit: cover !important;
+    border-radius: 100% !important;
+    object-fit: fill !important;
 }
 
 .dropdown-menu .u-img img {
     border-radius: 50% !important;
-    object-fit: cover !important;
+    object-fit: contain !important;
 }
 
 /* Ensure consistent sizing */
-.profile-pic,
-.header-profile-photo img,
-.profile-button img {
-    width: 36px;
-    height: 36px;
-    border: 2px solid var(--sunshine-yellow);
+.profile-button img,
+.dropdown-header img,
+.profile-pic {
+    border-radius: 50% !important;
+    object-fit: cover !important;
+    width: 36px !important;
+    height: 36px !important;
+}
+
+.dropdown-header img {
+    width: 60px !important;
+    height: 60px !important;
 }
 
 .dropdown-menu .u-img img {
@@ -359,6 +366,28 @@
 			background: linear-gradient(135deg, var(--ocean-blue), var(--sky-blue));
 		}
 
+	.dropdown-header {
+		padding: 0;
+		background: rgba(7, 59, 76, 0.05);
+		border-bottom: 1px solid rgba(0,0,0,0.1);
+	}
+
+	.profile-pic.square {
+    border-radius: 2px !important;
+
+
+	}		
+
+	.dropdown-header .fw-bold {
+		color: var(--ocean-blue);
+		font-size: 0.95rem;
+	}
+
+	.dropdown-header .text-muted {
+		font-size: 0.8rem;
+	}
+
+
 		/* Animation */
 		@keyframes fadeInUp {
 			from {
@@ -435,10 +464,35 @@
 				<div class="navbar-right">
 					<div class="profile-dropdown">
 						<button class="profile-button">
-							<img src="{% static 'img/profile_ko.jpg' %}" alt="Profile" class="profile-pic">
-							<span>Welcome!</span>
+							{% if user.is_authenticated %}
+								{% if user.socialaccount_set.all.0.get_avatar_url %}
+									<img src="{{ user.socialaccount_set.all.0.get_avatar_url }}" alt="Profile" class="profile-pic square">
+								{% else %}
+									<img src="{% static 'img/profile_ko.jpg' %}" alt="Profile" class="profile-pic">
+								{% endif %}
+								<span>Welcome, {{ user.first_name|default:user.username }}!</span>
+							{% else %}
+								<img src="{% static 'img/profile_ko.jpg' %}" alt="Profile" class="profile-pic">
+								<span>Welcome!</span>
+							{% endif %}
 						</button>
 						<div class="dropdown-menu" id="profileDropdown">
+							{% if user.is_authenticated %}
+								<div class="dropdown-header">
+									<div class="d-flex align-items-center px-3 py-2">
+										{% if user.socialaccount_set.all.0.get_avatar_url %}
+											<img src="{{ user.socialaccount_set.all.0.get_avatar_url }}" alt="Profile" class="profile-pic me-2">
+										{% else %}
+											<img src="{% static 'img/profile_ko.jpg' %}" alt="Profile" class="profile-pic me-2">
+										{% endif %}
+										<div>
+											<div class="fw-bold">{{ user.get_full_name|default:user.username }}</div>
+											<small class="text-muted">{{ user.email }}</small>
+										</div>
+									</div>
+								</div>
+								<div class="dropdown-divider"></div>
+							{% endif %}
 							<a href="#" class="dropdown-item">
 								<i class="fas fa-user"></i> My Account
 							</a>
@@ -446,9 +500,15 @@
 								<i class="fas fa-cog"></i> Settings
 							</a>
 							<div class="dropdown-divider"></div>
-							<a href="{% url 'account_logout' %}" class="dropdown-item">
-								<i class="fas fa-sign-out-alt"></i> Logout
-							</a>
+							{% if user.is_authenticated %}
+								<a href="{% url 'account_logout' %}" class="dropdown-item">
+									<i class="fas fa-sign-out-alt"></i> Logout
+								</a>
+							{% else %}
+								<a href="{% url 'account_login' %}" class="dropdown-item">
+									<i class="fas fa-sign-in-alt"></i> Login
+								</a>
+							{% endif %}
 						</div>
 					</div>
 				</div>
